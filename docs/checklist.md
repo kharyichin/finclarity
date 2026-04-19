@@ -18,7 +18,7 @@
   Acceptance: All 6 tables exist in Supabase with the correct columns. Foreign key relationships are in place. Cascade deletes are configured so deleting a user removes all their data.
   Verify: Open Supabase → Table Editor and confirm all 6 tables appear with the right columns. Click into `transactions` and confirm `user_id` has a foreign key link to `users`.
 
-- [ ] **2. Project setup**
+- [x] **2. Project setup**
   Spec ref: `spec.md > Stack`, `spec.md > Runtime & Deployment`, `spec.md > File Structure`
   What to build: Scaffold the Next.js 15 project with TypeScript and Tailwind CSS v4 using `create-next-app`. Install dependencies: `pdfjs-dist`, `@anthropic-ai/sdk`, `@supabase/supabase-js`, `@supabase/ssr`, `resend`. Create `types/index.ts` with TypeScript types for User, Statement, Transaction, MonthlyReport, CheckIn. Create `lib/supabase/client.ts` (browser) and `lib/supabase/server.ts` (API routes). Create `.env.local` with the four required environment variables and `.env.example` as a safe template. Set up `middleware.ts` to create an anonymous Supabase session on first visit. Create the full folder structure from `spec.md > File Structure` — empty files are fine at this stage.
   Acceptance: `npm run dev` starts without errors. Visiting `localhost:3000` loads a page (even if blank). Supabase environment variables are connected — no console errors about missing keys.

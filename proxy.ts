@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -26,9 +26,11 @@ export async function middleware(request: NextRequest) {
   )
 
   // Create an anonymous session on first visit if none exists
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+  console.log('[proxy] session:', session?.user?.id ?? 'none', 'error:', sessionError?.message ?? 'none')
   if (!session) {
-    await supabase.auth.signInAnonymously()
+    const { data, error } = await supabase.auth.signInAnonymously()
+    console.log('[proxy] signInAnonymously result:', data?.user?.id ?? 'no user', 'error:', error?.message ?? 'none')
   }
 
   return supabaseResponse

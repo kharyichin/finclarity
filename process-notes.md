@@ -190,6 +190,12 @@
 
 ## /build
 
+### Step 2: Project setup
+- **What was built:** Next.js 16 (latest, scaffolded via create-next-app) with TypeScript and Tailwind CSS v4. Installed pdfjs-dist, @anthropic-ai/sdk, @supabase/supabase-js, @supabase/ssr, resend. Created types/index.ts, lib/supabase/client.ts and server.ts, .env.local, .env.example, proxy.ts (anonymous auth), vercel.json, and full placeholder folder structure.
+- **Issues encountered:** (1) Node.js not installed — resolved with brew install node. (2) create-next-app conflicted with existing docs/ and supabase/ folders — scaffolded into /tmp then rsync'd over. (3) Next.js 16 renamed middleware.ts to proxy.ts with a different export name — renamed and fixed. (4) Anonymous users hidden behind email tab in Supabase Auth dashboard — not missing, just filtered.
+- **Verification:** Dev server ran at localhost:3000 with no console errors. Anonymous user created and confirmed in Supabase Authentication → Users (under email tab).
+- **Comprehension check:** Asked what proxy.ts does on first visit. Jade answered B (creates silent anonymous session so data has a user ID from the first visit). Correct.
+
 ### Step 1: Database schema
 - **What was built:** `supabase/schema.sql` with all 6 tables (`users`, `statements`, `transactions`, `monthly_reports`, `check_ins`, `exchange_rates`). Includes foreign keys, cascade deletes, unique constraints, and a trigger to auto-create a `public.users` row when Supabase creates any auth user.
 - **Schema correction mid-step:** Initial draft was missing the `auth.users` linkage (needed for anonymous auth to work) and the period duplicate constraint on `statements`. Both were caught before verification and fixed.
