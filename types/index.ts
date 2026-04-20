@@ -103,3 +103,17 @@ export interface TransactionSummary {
   top_category: string
   transactions: Transaction[]
 }
+
+export interface ExtractedTransaction {
+  date: string
+  merchant: string
+  amount: number
+  currency: string
+  originalAmount: number
+  bankRate: number | null
+  bankRateSGD: number | null
+  category: string
+  type: 'income' | 'expense' | 'transfer' | 'internal_transfer'
+  accountLast4: string
+  transferPairId?: string
+}

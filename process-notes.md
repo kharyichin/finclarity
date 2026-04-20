@@ -190,6 +190,12 @@
 
 ## /build
 
+### Step 3: GitHub repository
+- **What was built:** GitHub repo `finclarity` created at github.com/kharyichin/finclarity (public). gh CLI installed via brew and used for auth (`gh auth setup-git` resolved HTTPS credential issue). Remote origin set, pushed all existing commits.
+- **Issues encountered:** HTTPS push failed initially — `gh auth setup-git` needed to wire the gh CLI as git's credential helper. Resolved without friction.
+- **Verification:** Jade confirmed file structure visible on GitHub and .env.local absent from the repo.
+- **Comprehension check:** Asked why .env.local must be excluded. Answered correctly: it contains API keys that would be exposed on a public repo.
+
 ### Step 2: Project setup
 - **What was built:** Next.js 16 (latest, scaffolded via create-next-app) with TypeScript and Tailwind CSS v4. Installed pdfjs-dist, @anthropic-ai/sdk, @supabase/supabase-js, @supabase/ssr, resend. Created types/index.ts, lib/supabase/client.ts and server.ts, .env.local, .env.example, proxy.ts (anonymous auth), vercel.json, and full placeholder folder structure.
 - **Issues encountered:** (1) Node.js not installed — resolved with brew install node. (2) create-next-app conflicted with existing docs/ and supabase/ folders — scaffolded into /tmp then rsync'd over. (3) Next.js 16 renamed middleware.ts to proxy.ts with a different export name — renamed and fixed. (4) Anonymous users hidden behind email tab in Supabase Auth dashboard — not missing, just filtered.
