@@ -24,7 +24,7 @@
   Acceptance: `npm run dev` starts without errors. Visiting `localhost:3000` loads a page (even if blank). Supabase environment variables are connected — no console errors about missing keys.
   Verify: Run `npm run dev` and open `localhost:3000`. Open the browser console — confirm no red errors. Open Supabase → Authentication → Users and confirm an anonymous user appears after the first page load.
 
-- [ ] **3. GitHub repository**
+- [x] **3. GitHub repository**
   Spec ref: N/A — required for Devpost submission
   What to build: Initialise a git repository in the project folder (`git init`). Create a `.gitignore` that excludes `.env.local`, `node_modules/`, and `.next/`. Create a new GitHub repository named `finclarity` (public). Add it as the remote origin. Make the first commit with all current files. Push to GitHub.
   Acceptance: GitHub repository exists at `github.com/[your-username]/finclarity`. The project files are visible. `.env.local` is NOT in the repository.
