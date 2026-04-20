@@ -93,7 +93,7 @@ export default function DashboardPage() {
       <Sidebar onUpload={openUpload} />
 
       <div className="flex flex-col flex-1 min-w-0">
-        <TopBar />
+        <TopBar onUpload={openUpload} />
 
         <main className="flex-1 overflow-y-auto px-6 py-8">
           <div className="max-w-2xl mx-auto space-y-5">

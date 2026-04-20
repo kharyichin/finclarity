@@ -208,6 +208,19 @@
 - **Verification:** Jade confirmed dashboard loads at localhost:3000, green upload button visible, modal opens with drag-and-drop zone. Noted modal is small — flagged for v2 polish, not blocking.
 - **Comprehension check:** Asked where PDF processing happens. Answered correctly: on the server (Next.js API route). Unprompted observation: the privacy guarantee (PDF never stored) is worth highlighting in the Devpost write-up. Strong PM instinct.
 
+### Step 5: Claude extraction and narrative
+- **What was built:** `lib/claude/extract.ts` — real Claude haiku-4-5 extraction prompt with PII exclusion, JSON parsing, and fallback handling. `lib/claude/narrative.ts` — narrative prompt generating narrative text, summary cards, observations, and nudges. `lib/utils/transfers.ts` — internal transfer detection by amount/date proximity matching.
+- **Issues encountered:** (1) SHA-256 duplicate detection blocked re-uploads during debugging — required clearing statements table repeatedly. (2) `after()` in Next.js 16 silently swallowed pipeline errors in dev mode — switched to synchronous pipeline execution to surface errors. (3) Stale `ysk-ant-api03-` API key (paste typo with leading `y`). (4) New Anthropic account had no credits despite key being valid — required $5 top-up. (5) `max_tokens: 4096` too low for full statement — increased to 8096 to prevent truncated JSON. (6) `crypto.randomUUID()` missing import in transfers.ts — fixed with `import { randomUUID } from 'crypto'`.
+- **Verification:** Upload succeeded. "Password discarded" success animation shown. Transactions table populated with real rows. Narrative generated: "You brought in SGD 9,580.10 this month... running about SGD 1,560 in the red." Real Claude output, not stub text.
+- **Learner observation:** Noted narrative has room to improve — acknowledged, flagged for /iterate. Observed "Other" as dominant category — likely OCBC merchant code formatting.
+- **Active engagement:** Asked about free workaround (Gemini), deferred to keep on spec. Asked about token costs — explained clearly. Strong practical instincts throughout debugging session.
+
+### Step 6: Dashboard
+- **What was built:** Full dashboard with real data fetching from `/api/reports`. `NarrativeSummary`, `SummaryCards`, `ObservationsPanel`, `NudgesSection` all wired to live Supabase data. `Sidebar` with emoji nav icons and collapse/expand. `TopBar` with upload button top-right. `MonthSelector` for navigating between months. `CollapsiblePanel` and `MonthSelector` UI primitives. Dashboard auto-refreshes after upload via `onSuccess` callback.
+- **Learner verification:** Dashboard loaded with real data. Summary cards visible. Sidebar collapses/expands correctly. Upload button visible top-right.
+- **Issues flagged by learner:** Narrative text not making sense; summary card figures inaccurate. Root cause: Claude prompt quality from Step 5 (OCBC merchant code formatting). Flagged for `/iterate`.
+- **Comprehension check:** Asked what triggers the dashboard refresh after upload. Answered correctly: the `onSuccess` callback calls `fetchReport`.
+
 ### Step 1: Database schema
 - **What was built:** `supabase/schema.sql` with all 6 tables (`users`, `statements`, `transactions`, `monthly_reports`, `check_ins`, `exchange_rates`). Includes foreign keys, cascade deletes, unique constraints, and a trigger to auto-create a `public.users` row when Supabase creates any auth user.
 - **Schema correction mid-step:** Initial draft was missing the `auth.users` linkage (needed for anonymous auth to work) and the period duplicate constraint on `statements`. Both were caught before verification and fixed.

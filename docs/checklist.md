@@ -42,7 +42,7 @@
   Acceptance: After upload, `transactions` rows have realistic `claude_category` values (not all "Uncategorised"). `monthly_reports.narrative_text` is a readable 2–3 sentence summary that leads with wins. `observations_json` and `nudges_json` are populated (may be empty arrays for first upload with no prior month).
   Verify: Read the narrative text in Supabase — does it sound like a human wrote it? Does it correctly identify the top spending category? Check that no PII (name, address, NRIC) appears anywhere in the `transactions` table.
 
-- [ ] **6. Dashboard**
+- [x] **6. Dashboard**
   Spec ref: `spec.md > Frontend > Dashboard (Real Data)`
   What to build: Build `app/dashboard/page.tsx` — fetches the current month's `monthly_reports` row on load. Render four sections: `NarrativeSummary.tsx` (2–3 sentence summary, two states: no data vs real data), `SummaryCards.tsx` (4 cards: Total Spent, Total Saved, Biggest Spending Category, One Forward-Looking Watchout), `ObservationsPanel.tsx` (collapsible, retrospective flags in warm conversational language), `NudgesSection.tsx` (1–2 forward-looking nudges). Add `MonthSelector.tsx` at the top. Handle the single-month state: hide observations panel, show "Upload a past statement to unlock comparisons" in the MoM card. Build `components/layout/Sidebar.tsx` (collapsible nav) and `components/layout/TopBar.tsx` (streak counter placeholder). Apply Tailwind styling — warm, nature-inspired, not corporate grey.
   Acceptance: Dashboard loads with real data from the uploaded statement. Narrative summary is visible. All 4 summary cards show correct figures. Observations panel is collapsible. Sidebar opens and closes without disrupting the content area. Design feels warm and approachable, not like a banking app.

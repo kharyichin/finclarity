@@ -5,10 +5,10 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: '◈' },
-  { href: '/breakdown', label: 'Spending Breakdown', icon: '◉' },
-  { href: '/history', label: 'Upload History', icon: '◎' },
-  { href: '/settings', label: 'Settings', icon: '◌' },
+  { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
+  { href: '/breakdown', label: 'Spending Breakdown', icon: '📊' },
+  { href: '/history', label: 'Upload History', icon: '📂' },
+  { href: '/settings', label: 'Settings', icon: '⚙️' },
 ]
 
 export function Sidebar({ onUpload }: { onUpload?: () => void }) {
@@ -54,15 +54,6 @@ export function Sidebar({ onUpload }: { onUpload?: () => void }) {
         })}
       </nav>
 
-      <div className="px-2 pb-4">
-        <button
-          onClick={onUpload}
-          className={`w-full rounded-xl bg-green-600 text-white py-2.5 text-sm font-medium hover:bg-green-700 transition flex items-center justify-center gap-2`}
-        >
-          <span>+</span>
-          {!collapsed && <span>Upload Statement</span>}
-        </button>
-      </div>
     </aside>
   )
 }
