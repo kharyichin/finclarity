@@ -30,13 +30,13 @@
   Acceptance: GitHub repository exists at `github.com/[your-username]/finclarity`. The project files are visible. `.env.local` is NOT in the repository.
   Verify: Open your GitHub repo in the browser. Confirm the file structure matches your local project. Confirm `.env.local` does not appear in the file list.
 
-- [ ] **4. PDF upload pipeline**
+- [x] **4. PDF upload pipeline**
   Spec ref: `spec.md > Backend (API Routes) > Statement Upload`, `spec.md > Core Library > PDF Parsing`, `spec.md > Frontend > Upload Flow`
   What to build: Build `lib/pdf/parse.ts` — pdfjs-dist password detection and text extraction. Build `app/api/statements/upload/route.ts` — the full 10-step async pipeline: receive file, SHA-256 duplicate check, period duplicate check, insert `statements` row, extract PDF text, detect password protection, pass text to Claude, detect internal transfers, generate narrative, insert transactions and report. Build `app/api/statements/[id]/route.ts` — status polling endpoint. Build the upload UI: `components/upload/UploadZone.tsx`, `PasswordPrompt.tsx`, `ProcessingState.tsx` (polls every 2 seconds), `SuccessState.tsx`, `ErrorState.tsx`. Wire the upload modal into `app/dashboard/page.tsx`.
   Acceptance: User can drag-and-drop or select a PDF. If password-protected, password prompt appears inline. Animated loading state shows during processing. On success, celebration animation confirms "Statement processed — password discarded." Transactions appear in the `transactions` table in Supabase. A `monthly_reports` row is created.
   Verify: Upload a real bank statement PDF. Open Supabase → Table Editor → `transactions` and confirm rows were inserted with correct date, merchant, amount, currency. Open `monthly_reports` and confirm a row exists with `narrative_text` populated.
 
-- [ ] **5. Claude extraction and narrative**
+- [x] **5. Claude extraction and narrative**
   Spec ref: `spec.md > Core Library > Claude — Transaction Extraction`, `spec.md > Core Library > Claude — Narrative & Observations`
   What to build: Build `lib/claude/extract.ts` — the extraction prompt with explicit PII exclusion instructions, the `claude-haiku-4-5` API call, and the response parser that returns structured `Transaction[]`. Build `lib/claude/narrative.ts` — the narrative prompt that accepts current month summary + optional prior month data, calls `claude-haiku-4-5`, and returns narrative text, summary cards JSON, observations JSON, and nudges JSON. Build `lib/utils/transfers.ts` — internal transfer detection (match debit/credit pairs across accounts within ±3 days, ±2% amount). Wire both Claude calls into the upload pipeline from Step 4.
   Acceptance: After upload, `transactions` rows have realistic `claude_category` values (not all "Uncategorised"). `monthly_reports.narrative_text` is a readable 2–3 sentence summary that leads with wins. `observations_json` and `nudges_json` are populated (may be empty arrays for first upload with no prior month).

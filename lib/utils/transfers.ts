@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto'
 import type { ExtractedTransaction } from '@/types'
 
 const TRANSFER_KEYWORDS = [
@@ -49,7 +50,7 @@ export function detectTransfers(transactions: ExtractedTransaction[]): Extracted
         amountsMatch(debits[i].amount, credits[j].amount) &&
         daysBetween(debits[i].date, credits[j].date) <= 3
       ) {
-        const pairId = crypto.randomUUID()
+        const pairId = randomUUID()
         pairMap.set(debitIdx, pairId)
         pairMap.set(creditIdx, pairId)
         matched.add(debitIdx)

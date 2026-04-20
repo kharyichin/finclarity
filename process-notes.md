@@ -202,6 +202,12 @@
 - **Verification:** Dev server ran at localhost:3000 with no console errors. Anonymous user created and confirmed in Supabase Authentication → Users (under email tab).
 - **Comprehension check:** Asked what proxy.ts does on first visit. Jade answered B (creates silent anonymous session so data has a user ID from the first visit). Correct.
 
+### Step 4: PDF upload pipeline
+- **What was built:** `lib/pdf/parse.ts` (pdfjs-dist legacy build, text extraction + date range detection + password exception handling). `app/api/statements/upload/route.ts` — full 10-step async pipeline using `after()` from next/server, SHA-256 duplicate check, calls Claude stubs and transfer detection stubs. `app/api/statements/[id]/route.ts` — status polling endpoint. All 5 upload UI components: UploadZone (drag-and-drop), PasswordPrompt, ProcessingState (polls every 2 seconds), SuccessState, ErrorState. `app/dashboard/page.tsx` wired up with modal and full upload flow state machine. Claude extract/narrative and transfer detection are functional stubs returning empty data — real implementations in step 5.
+- **Issues encountered:** (1) pdfjs-dist v5 is ESM-only — using `serverExternalPackages` failed; switched to legacy build (`pdfjs-dist/legacy/build/pdf.mjs`) as recommended by pdfjs for Node.js. (2) `DOMMatrix is not defined` error with the standard pdfjs build — resolved by legacy build. (3) All placeholder pages from step 2 were empty files failing TypeScript — added minimal stubs.
+- **Verification:** Jade confirmed dashboard loads at localhost:3000, green upload button visible, modal opens with drag-and-drop zone. Noted modal is small — flagged for v2 polish, not blocking.
+- **Comprehension check:** Asked where PDF processing happens. Answered correctly: on the server (Next.js API route). Unprompted observation: the privacy guarantee (PDF never stored) is worth highlighting in the Devpost write-up. Strong PM instinct.
+
 ### Step 1: Database schema
 - **What was built:** `supabase/schema.sql` with all 6 tables (`users`, `statements`, `transactions`, `monthly_reports`, `check_ins`, `exchange_rates`). Includes foreign keys, cascade deletes, unique constraints, and a trigger to auto-create a `public.users` row when Supabase creates any auth user.
 - **Schema correction mid-step:** Initial draft was missing the `auth.users` linkage (needed for anonymous auth to work) and the period duplicate constraint on `statements`. Both were caught before verification and fixed.

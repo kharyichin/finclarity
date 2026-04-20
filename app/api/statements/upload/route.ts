@@ -1,4 +1,3 @@
-import { after } from 'next/server'
 import crypto from 'crypto'
 import { createClient } from '@/lib/supabase/server'
 import { parsePDF } from '@/lib/pdf/parse'
@@ -30,7 +29,7 @@ export async function POST(request: Request) {
 
   // Password retry — re-run pipeline on existing statement
   if (existingStatementId) {
-    after(() => runPipeline(existingStatementId, fileBytes, password))
+    await runPipeline(existingStatementId, fileBytes, password)
     return Response.json({ statement_id: existingStatementId })
   }
 
@@ -57,7 +56,7 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Failed to create statement' }, { status: 500 })
   }
 
-  after(() => runPipeline(statement.id, fileBytes, password))
+  await runPipeline(statement.id, fileBytes, password)
   return Response.json({ statement_id: statement.id })
 }
 

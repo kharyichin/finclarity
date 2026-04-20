@@ -18,7 +18,7 @@ export { PROMPT_VERSION as EXTRACT_PROMPT_VERSION }
 export async function extractTransactions(rawText: string): Promise<ExtractResult> {
   const message = await client.messages.create({
     model: 'claude-haiku-4-5',
-    max_tokens: 4096,
+    max_tokens: 8096,
     messages: [
       {
         role: 'user',
