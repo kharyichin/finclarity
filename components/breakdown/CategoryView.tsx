@@ -3,6 +3,32 @@
 import { TransactionRow } from '@/components/transactions/TransactionRow'
 import type { Transaction } from '@/types'
 
+const CATEGORY_COLOURS = [
+  'bg-emerald-400',
+  'bg-sky-400',
+  'bg-violet-400',
+  'bg-amber-400',
+  'bg-rose-400',
+  'bg-teal-400',
+  'bg-orange-400',
+  'bg-indigo-400',
+  'bg-pink-400',
+  'bg-lime-400',
+]
+
+const CATEGORY_LIGHT = [
+  'bg-emerald-50 border-emerald-100',
+  'bg-sky-50 border-sky-100',
+  'bg-violet-50 border-violet-100',
+  'bg-amber-50 border-amber-100',
+  'bg-rose-50 border-rose-100',
+  'bg-teal-50 border-teal-100',
+  'bg-orange-50 border-orange-100',
+  'bg-indigo-50 border-indigo-100',
+  'bg-pink-50 border-pink-100',
+  'bg-lime-50 border-lime-100',
+]
+
 export function CategoryView({ transactions }: { transactions: Transaction[] }) {
   const groups = new Map<string, Transaction[]>()
 
@@ -23,17 +49,58 @@ export function CategoryView({ transactions }: { transactions: Transaction[] }) 
     return <p className="text-sm text-stone-400 py-6 text-center">No transactions to show.</p>
   }
 
+  const totals = sorted.map(([cat, txs]) => ({
+    cat,
+    total: txs.reduce((s, t) => s + (t.sgd_amount ?? t.amount), 0),
+  }))
+
+  const grandTotal = totals.reduce((s, { total }) => s + total, 0)
+
   return (
     <div className="space-y-6">
-      {sorted.map(([category, txs]) => {
-        const total = txs.reduce((s, t) => s + (t.sgd_amount ?? t.amount), 0)
+      {/* Summary chart */}
+      <div className="rounded-2xl bg-white border border-stone-100 p-4 space-y-3">
+        <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Spending by Category</p>
+
+        {/* Stacked bar */}
+        <div className="flex h-3 rounded-full overflow-hidden gap-0.5">
+          {totals.map(({ cat, total }, i) => (
+            <div
+              key={cat}
+              className={`${CATEGORY_COLOURS[i % CATEGORY_COLOURS.length]} transition-all`}
+              style={{ width: `${(total / grandTotal) * 100}%` }}
+              title={`${cat}: ${total.toFixed(2)} SGD`}
+            />
+          ))}
+        </div>
+
+        {/* Legend */}
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          {totals.map(({ cat, total }, i) => (
+            <div key={cat} className="flex items-center gap-1.5">
+              <span className={`inline-block w-2.5 h-2.5 rounded-full ${CATEGORY_COLOURS[i % CATEGORY_COLOURS.length]}`} />
+              <span className="text-xs text-stone-600">{cat}</span>
+              <span className="text-xs text-stone-400">{((total / grandTotal) * 100).toFixed(0)}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Per-category transaction lists */}
+      {sorted.map(([category, txs], i) => {
+        const total = totals[i].total
+        const pct = ((total / grandTotal) * 100).toFixed(0)
         return (
           <div key={category}>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-stone-700">{category}</h3>
+              <div className="flex items-center gap-2">
+                <span className={`inline-block w-2.5 h-2.5 rounded-full ${CATEGORY_COLOURS[i % CATEGORY_COLOURS.length]}`} />
+                <h3 className="text-sm font-semibold text-stone-700">{category}</h3>
+                <span className="text-xs text-stone-400">{pct}%</span>
+              </div>
               <span className="text-sm font-medium text-stone-600">{total.toFixed(2)} SGD</span>
             </div>
-            <div className="rounded-2xl bg-white border border-stone-100 px-4">
+            <div className={`rounded-2xl border px-4 ${CATEGORY_LIGHT[i % CATEGORY_LIGHT.length]}`}>
               {txs.map((tx) => <TransactionRow key={tx.id} tx={tx} />)}
             </div>
           </div>

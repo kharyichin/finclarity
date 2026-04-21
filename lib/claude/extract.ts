@@ -64,6 +64,7 @@ Rules:
 - Extract ALL transaction rows. Do not summarise or skip any.
 - For type: credit card purchases = "expense". Payments/credits = "income". PayNow/FAST/GIRO between own accounts = "transfer".
 - If a field is not present in the statement, use null.
+- FOREIGN CURRENCY: Many Singapore bank statements show foreign transactions with BOTH the original foreign amount AND the SGD equivalent on the same line or nearby lines (e.g. "USD 7.25" then "9.90" or "9.90 SGD"). When you see a currency code other than SGD (USD, MYR, EUR, GBP, AUD, HKD, JPY, CNY, etc.) near a transaction, set currency to that code, originalAmount to that foreign value, and amount to the SGD equivalent. Do NOT default everything to SGD — look carefully for currency codes on each transaction line.
 - Return valid JSON only. No explanation, no markdown, no code fences.
 
 Statement text:

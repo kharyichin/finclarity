@@ -190,6 +190,12 @@
 
 ## /build
 
+### Step 7: Demo and first-run experience
+- **What was built:** `components/ui/Tooltip.tsx` — dismissable overlay component wrapping any section. `app/demo/page.tsx` — static demo dashboard with hardcoded Singapore April 2026 data (narrative, 4 summary cards, 2 nudges). Demo banner clearly labelled "Demo — not your real finances." 3 Tooltip overlays on narrative, summary cards, and upload CTA. Upload CTA links to `/dashboard`. `app/page.tsx` replaced — server component checks if user has any complete statements; redirects returning users to `/dashboard`, new visitors to `/demo`.
+- **Issues encountered:** None — clean build first try.
+- **Verification:** Jade confirmed demo looks good. Iterated on tooltip design (covered → below section → above section with colour options) and banner (warning amber → scrolling ticker). Final: blue numbered tooltip pills above each highlighted section, stone ticker at top.
+- **Active engagement:** Drove multiple rounds of visual polish — clear sense of what felt right. "okay this is great for v1" confirmed satisfaction.
+
 ### Step 3: GitHub repository
 - **What was built:** GitHub repo `finclarity` created at github.com/kharyichin/finclarity (public). gh CLI installed via brew and used for auth (`gh auth setup-git` resolved HTTPS credential issue). Remote origin set, pushed all existing commits.
 - **Issues encountered:** HTTPS push failed initially — `gh auth setup-git` needed to wire the gh CLI as git's credential helper. Resolved without friction.

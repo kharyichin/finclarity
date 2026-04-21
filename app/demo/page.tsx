@@ -43,12 +43,18 @@ export default function DemoPage() {
         <main className="flex-1 overflow-y-auto px-6 py-8">
           <div className="max-w-2xl mx-auto space-y-5">
 
-            {/* Demo banner */}
-            <div className="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5">
-              <span className="text-amber-500 text-sm">◆</span>
-              <p className="text-xs font-medium text-amber-700">
-                Demo — not your real finances. Upload a statement to see your actual picture.
-              </p>
+            {/* Demo ticker */}
+            <div className="overflow-hidden rounded-xl bg-stone-100 py-2">
+              <div
+                className="flex whitespace-nowrap text-xs text-stone-400"
+                style={{ animation: 'ticker 18s linear infinite' }}
+              >
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <span key={i} className="px-8">
+                    🌿 This is a sample — upload a statement to see your real picture.
+                  </span>
+                ))}
+              </div>
             </div>
 
             <div className="flex items-center justify-between">
@@ -57,7 +63,7 @@ export default function DemoPage() {
             </div>
 
             {/* Narrative with tooltip */}
-            <Tooltip message="This is your monthly summary — a plain-language snapshot of where your money went and how you're tracking.">
+            <Tooltip step={1} message="This is your monthly summary — a plain-language snapshot of where your money went and how you're tracking.">
               <NarrativeSummary
                 narrative={DEMO_NARRATIVE}
                 hasUploads={true}
@@ -66,14 +72,14 @@ export default function DemoPage() {
             </Tooltip>
 
             {/* Summary cards with tooltip */}
-            <Tooltip message="Four cards that tell you the most important numbers at a glance — what you spent, what you saved, your biggest category, and one thing to watch.">
+            <Tooltip step={2} message="Four cards that tell you the most important numbers at a glance — what you spent, what you saved, your biggest category, and one thing to watch.">
               <SummaryCards data={DEMO_CARDS} hasComparison={false} />
             </Tooltip>
 
             <NudgesSection nudges={DEMO_NUDGES} />
 
             {/* Upload CTA with tooltip */}
-            <Tooltip message="When you're ready, upload a real bank statement — PDF from your bank app works perfectly. Your password is never stored.">
+            <Tooltip step={3} message="When you're ready, upload a real bank statement — PDF from your bank app works perfectly. Your password is never stored.">
               <div className="rounded-2xl border border-green-200 bg-gradient-to-br from-green-50 to-stone-50 p-6 text-center">
                 <p className="text-2xl mb-2">🌿</p>
                 <p className="text-sm text-stone-600 mb-4 leading-relaxed">

@@ -39,7 +39,7 @@ export function getCalendarWeeks(month: string): Week[] {
     weeks.push({
       label: weekStart.getTime() === weekEnd.getTime()
         ? fmt(weekStart)
-        : `${fmt(weekStart)}–${weekEnd.getDate()}`,
+        : `${fmt(weekStart)}–${fmt(weekEnd)}`,
       start: new Date(weekStart),
       end: new Date(weekEnd),
     })

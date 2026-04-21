@@ -9,8 +9,10 @@ export function formatTransaction(tx: Transaction): {
   const primaryDisplay = `${sgd.toFixed(2)} SGD`
 
   let secondaryDisplay: string | null = null
-  if (tx.currency !== 'SGD' && tx.original_amount != null) {
-    secondaryDisplay = `${tx.original_amount.toFixed(2)} ${tx.currency}`
+  if (tx.currency !== 'SGD') {
+    // original_amount holds the foreign currency amount; fall back to amount if null
+    const foreignAmt = tx.original_amount ?? tx.amount
+    secondaryDisplay = `${foreignAmt.toFixed(2)} ${tx.currency}`
   }
 
   let rateAttribution: string | null = null
