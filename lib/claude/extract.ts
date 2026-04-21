@@ -38,7 +38,7 @@ IMPORTANT — DO NOT extract or include anywhere in your response:
 Return ONLY a valid JSON object with this exact structure:
 {
   "bankName": "string — bank name only, e.g. 'OCBC', 'DBS', 'UOB', 'Citibank', 'Standard Chartered'",
-  "cardName": "string or null — the card product name found in the statement header or title, e.g. '90N Visa', 'Live Fresh', 'One Card', 'PremierMiles', 'Rewards+'. Look at the top of the statement for lines like 'OCBC 90°N Card', 'DBS Live Fresh Card', etc. Return just the product name without the bank prefix. null if not found.",
+  "cardName": "string or null — the card product name found anywhere in the statement. Common OCBC cards: '90N' (also written '90°N'), 'Infinity Cashback', '365', 'Frank', 'Titanium Rewards'. Common DBS: 'Live Fresh', 'Altitude', 'Multiplier'. Common UOB: 'One', 'Absolute', 'Lady's'. Common Citi: 'PremierMiles', 'Cashback', 'Rewards'. Return just the short product name (e.g. '90N', 'Infinity Cashback', 'Live Fresh'). null only if truly absent.",
   "statementType": "credit_card" or "bank_account",
   "accountLast4": "string — last 4 digits of the account or card number",
   "dateRange": {
@@ -69,7 +69,7 @@ Rules:
 - Genuine cashback from the bank = type "income", category "Cashback".
 - If a field is not present in the statement, use null.
 - FOREIGN CURRENCY: OCBC and other Singapore banks show foreign transactions with the SGD charge on the transaction line, followed by a line "FOREIGN CURRENCY [CODE] [AMOUNT]" — where [CODE] is ANY ISO 4217 currency code (USD, SEK, EUR, GBP, MYR, AUD, JPY, HKD, CNY, DKK, NOK, CHF, etc.). When you see this pattern for ANY currency code, set currency to that code, originalAmount to that foreign value, and amount to the SGD charge on the transaction line above. Do not limit this only to USD — apply it to every currency code you encounter. Other banks may show it inline (e.g. "SEK 89.00 / 11.20 SGD"). Never default to SGD when a foreign currency line is present.
-- CARD NAME: Look at the very first lines of the statement for the card product name. OCBC uses names like "90°N Card", "365 Card", "Frank Card". DBS uses "Live Fresh", "Altitude". UOB uses "One Card", "Absolute". Extract just the product portion into cardName. This is important — do not skip it.
+- CARD NAME: Scan the entire statement for the card product name — it may appear in the header, title, footer, or account summary. For OCBC: look for "90°N", "90N", "Infinity Cashback", "365", "Frank". For DBS: "Live Fresh", "Altitude". For UOB: "One Card". Extract only the short product name into cardName (e.g. "90N", "Infinity Cashback"). This field is critical — do not return null unless the product name is genuinely absent from the entire document.
 - Return valid JSON only. No explanation, no markdown, no code fences.
 
 Statement text:
