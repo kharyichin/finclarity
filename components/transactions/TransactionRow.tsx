@@ -1,6 +1,7 @@
 'use client'
 
 import { formatTransaction } from '@/lib/utils/currency'
+import { getCategoryIcon } from '@/lib/utils/categories'
 import type { Transaction } from '@/types'
 
 export function TransactionRow({ tx }: { tx: Transaction }) {
@@ -18,8 +19,9 @@ export function TransactionRow({ tx }: { tx: Transaction }) {
             {new Date(tx.date).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
           </span>
           <span className="text-xs text-stone-300">·</span>
-          <span className="inline-flex items-center rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-500">
-            {category}
+          <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-500">
+            <span>{getCategoryIcon(category)}</span>
+            <span>{category}</span>
           </span>
           {tx.bank_name && (
             <>

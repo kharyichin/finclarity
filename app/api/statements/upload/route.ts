@@ -87,13 +87,16 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
     if (!stmt) return
 
     const expenses = transactions.filter((t) => t.type === 'expense')
-    const income = transactions.filter((t) => t.type === 'income')
+    // Reversals cancel a previous charge — exclude from savings total
+    const trueIncome = transactions.filter(
+      (t) => t.type === 'income' && t.category !== 'Refund & Reversal'
+    )
     const topCategory = getTopCategory(expenses)
 
     const currentSummary: TransactionSummary = {
       month_year: monthYear,
       total_spent: expenses.reduce((sum, t) => sum + t.amount, 0),
-      total_saved: income.reduce((sum, t) => sum + t.amount, 0),
+      total_saved: trueIncome.reduce((sum, t) => sum + t.amount, 0),
       top_category: topCategory,
       transactions: [],
     }

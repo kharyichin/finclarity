@@ -1,6 +1,7 @@
 'use client'
 
 import { TransactionRow } from '@/components/transactions/TransactionRow'
+import { getCategoryIcon } from '@/lib/utils/categories'
 import type { Transaction } from '@/types'
 
 const CATEGORY_COLOURS = [
@@ -32,8 +33,14 @@ const CATEGORY_LIGHT = [
 export function CategoryView({ transactions }: { transactions: Transaction[] }) {
   const groups = new Map<string, Transaction[]>()
 
+  // Separate reversals — shown below but excluded from spending chart
+  const reversals = transactions.filter(
+    (tx) => (tx.user_category ?? tx.claude_category) === 'Refund & Reversal'
+  )
+
   for (const tx of transactions) {
     if (tx.type === 'internal_transfer') continue
+    if ((tx.user_category ?? tx.claude_category) === 'Refund & Reversal') continue
     const key = tx.user_category ?? tx.claude_category ?? 'Uncategorised'
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key)!.push(tx)
@@ -79,6 +86,7 @@ export function CategoryView({ transactions }: { transactions: Transaction[] }) 
           {totals.map(({ cat, total }, i) => (
             <div key={cat} className="flex items-center gap-1.5">
               <span className={`inline-block w-2.5 h-2.5 rounded-full ${CATEGORY_COLOURS[i % CATEGORY_COLOURS.length]}`} />
+              <span>{getCategoryIcon(cat)}</span>
               <span className="text-xs text-stone-600">{cat}</span>
               <span className="text-xs text-stone-400">{((total / grandTotal) * 100).toFixed(0)}%</span>
             </div>
@@ -95,6 +103,7 @@ export function CategoryView({ transactions }: { transactions: Transaction[] }) 
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className={`inline-block w-2.5 h-2.5 rounded-full ${CATEGORY_COLOURS[i % CATEGORY_COLOURS.length]}`} />
+                <span>{getCategoryIcon(category)}</span>
                 <h3 className="text-sm font-semibold text-stone-700">{category}</h3>
                 <span className="text-xs text-stone-400">{pct}%</span>
               </div>
@@ -106,6 +115,22 @@ export function CategoryView({ transactions }: { transactions: Transaction[] }) 
           </div>
         )
       })}
+
+      {/* Reversals — excluded from spending chart, shown separately */}
+      {reversals.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span>↩️</span>
+              <h3 className="text-sm font-semibold text-stone-500">Refunds & Reversals</h3>
+            </div>
+            <span className="text-xs text-stone-400 italic">not counted in spending</span>
+          </div>
+          <div className="rounded-2xl border border-stone-100 bg-stone-50 px-4">
+            {reversals.map((tx) => <TransactionRow key={tx.id} tx={tx} />)}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
