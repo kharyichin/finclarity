@@ -64,7 +64,7 @@ Rules:
 - Extract ALL transaction rows. Do not summarise or skip any.
 - For type: credit card purchases = "expense". Payments/credits = "income". PayNow/FAST/GIRO between own accounts = "transfer".
 - If a field is not present in the statement, use null.
-- FOREIGN CURRENCY: Singapore banks show foreign transactions with the SGD charge AND the original foreign amount. OCBC specifically uses a line like "FOREIGN CURRENCY USD 7.45" immediately after the transaction line — when you see this pattern, set currency to that code (e.g. "USD"), originalAmount to that value (e.g. 7.45), and amount to the SGD charge on the transaction line above. Other banks may show it inline (e.g. "USD 7.45 / 9.90"). Always capture the original foreign currency and amount — do NOT default to SGD when a foreign currency line is present.
+- FOREIGN CURRENCY: OCBC and other Singapore banks show foreign transactions with the SGD charge on the transaction line, followed by a line "FOREIGN CURRENCY [CODE] [AMOUNT]" — where [CODE] is ANY ISO 4217 currency code (USD, SEK, EUR, GBP, MYR, AUD, JPY, HKD, CNY, DKK, NOK, CHF, etc.). When you see this pattern for ANY currency code, set currency to that code, originalAmount to that foreign value, and amount to the SGD charge on the transaction line above. Do not limit this only to USD — apply it to every currency code you encounter. Other banks may show it inline (e.g. "SEK 89.00 / 11.20 SGD"). Never default to SGD when a foreign currency line is present.
 - Return valid JSON only. No explanation, no markdown, no code fences.
 
 Statement text:
