@@ -2,9 +2,11 @@
 
 import { formatTransaction } from '@/lib/utils/currency'
 import { getCategoryIcon } from '@/lib/utils/categories'
+import { useCardNicknames } from '@/components/providers/CardNicknamesProvider'
 import type { Transaction } from '@/types'
 
 export function TransactionRow({ tx }: { tx: Transaction }) {
+  const { getLabel } = useCardNicknames()
   const { primaryDisplay, secondaryDisplay, rateAttribution } = formatTransaction(tx)
   const category = tx.user_category ?? tx.claude_category ?? 'Uncategorised'
   const isIncome = tx.type === 'income'
@@ -23,10 +25,10 @@ export function TransactionRow({ tx }: { tx: Transaction }) {
             <span>{getCategoryIcon(category)}</span>
             <span>{category}</span>
           </span>
-          {tx.bank_name && (
+          {tx.account_last4 && (
             <>
               <span className="text-xs text-stone-300">·</span>
-              <span className="text-xs text-stone-400">{tx.bank_name} ···{tx.account_last4}</span>
+              <span className="text-xs text-stone-400">{getLabel(tx.bank_name, tx.account_last4)}</span>
             </>
           )}
         </div>

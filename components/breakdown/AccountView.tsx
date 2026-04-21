@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { TransactionRow } from '@/components/transactions/TransactionRow'
-import { getCardNicknames, setCardNickname, getCardLabel } from '@/lib/utils/cardNicknames'
+import { useCardNicknames } from '@/components/providers/CardNicknamesProvider'
 import type { Transaction } from '@/types'
 
 const ACCOUNT_COLOURS = [
@@ -21,18 +21,15 @@ function NicknameEditor({
 }: {
   accountLast4: string
   bankName: string | null
-  onSave: () => void
+  onSave: (nickname: string) => void
 }) {
-  const nicknames = getCardNicknames()
+  const { nicknames } = useCardNicknames()
   const [value, setValue] = useState(nicknames[accountLast4] ?? bankName ?? '')
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { inputRef.current?.focus() }, [])
 
-  function save() {
-    setCardNickname(accountLast4, value)
-    onSave()
-  }
+  function save() { onSave(value) }
 
   return (
     <div className="flex items-center gap-2">
@@ -40,21 +37,19 @@ function NicknameEditor({
         ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') onSave() }}
+        onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') onSave('') }}
         className="text-sm border border-stone-300 rounded-lg px-2 py-1 w-44 focus:outline-none focus:ring-1 focus:ring-green-500"
         placeholder="Card nickname"
       />
       <button onClick={save} className="text-xs font-medium text-green-600 hover:text-green-700">Save</button>
-      <button onClick={onSave} className="text-xs text-stone-400 hover:text-stone-600">Cancel</button>
+      <button onClick={() => onSave('')} className="text-xs text-stone-400 hover:text-stone-600">Cancel</button>
     </div>
   )
 }
 
 export function AccountView({ transactions }: { transactions: Transaction[] }) {
-  const [nicknames, setNicknames] = useState<Record<string, string>>({})
+  const { nicknames, setNickname, getLabel } = useCardNicknames()
   const [editing, setEditing] = useState<string | null>(null)
-
-  useEffect(() => { setNicknames(getCardNicknames()) }, [])
 
   const groups = new Map<string, { bankName: string | null; all: Transaction[]; expenses: Transaction[] }>()
 
@@ -74,22 +69,12 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
     .map(([key, g]) => ({
       key,
       bankName: g.bankName,
-      label: getCardLabel(g.bankName, key === 'unknown' ? null : key),
       spent: g.expenses.reduce((s, t) => s + (t.sgd_amount ?? t.amount), 0),
       all: g.all,
     }))
     .sort((a, b) => b.spent - a.spent)
 
   const grandTotal = accountTotals.reduce((s, a) => s + a.spent, 0)
-
-  function handleSave(key: string) {
-    setNicknames(getCardNicknames())
-    setEditing(null)
-    // re-derive labels by triggering re-render
-    accountTotals.forEach((a) => {
-      if (a.key === key) a.label = getCardLabel(a.bankName, key === 'unknown' ? null : key)
-    })
-  }
 
   return (
     <div className="space-y-6">
@@ -113,7 +98,7 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
               <div className="flex items-center gap-2">
                 <span className={`inline-block w-2.5 h-2.5 rounded-full shrink-0 ${ACCOUNT_COLOURS[i % ACCOUNT_COLOURS.length]}`} />
                 <span className="text-xs text-stone-700 font-medium">
-                  {nicknames[key] ? `${nicknames[key]} ···${key}` : getCardLabel(bankName, key === 'unknown' ? null : key)}
+                  {getLabel(bankName, key === 'unknown' ? null : key)}
                 </span>
               </div>
               <div className="flex items-center gap-3">
@@ -127,7 +112,7 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
 
       {/* Per-account lists */}
       {accountTotals.map(({ key, bankName, spent, all }, i) => {
-        const label = nicknames[key] ? `${nicknames[key]} ···${key}` : getCardLabel(bankName, key === 'unknown' ? null : key)
+        const label = getLabel(bankName, key === 'unknown' ? null : key)
         return (
           <div key={key}>
             <div className="flex items-center justify-between mb-2">
@@ -137,7 +122,7 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
                   <NicknameEditor
                     accountLast4={key}
                     bankName={bankName}
-                    onSave={() => handleSave(key)}
+                    onSave={(nick) => { if (nick) setNickname(key, nick); setEditing(null) }}
                   />
                 ) : (
                   <>
