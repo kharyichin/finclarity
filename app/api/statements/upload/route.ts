@@ -86,6 +86,14 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
 
     if (!stmt) return
 
+    if (transactions.length === 0) {
+      await supabase
+        .from('statements')
+        .update({ status: 'failed' })
+        .eq('id', statementId)
+      return
+    }
+
     const expenses = transactions.filter((t) => t.type === 'expense')
     // Reversals cancel a previous charge — exclude from savings total
     const trueIncome = transactions.filter(

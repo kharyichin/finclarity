@@ -51,7 +51,7 @@ export function ProcessingState({ statementId, onNeedsPassword, onSuccess, onErr
           onSuccess()
         } else if (data.status === 'failed') {
           clearInterval(intervalRef.current!)
-          onError('We couldn\'t process this statement. Try a different file or contact support.')
+          onError('No transactions found. Make sure you\'re uploading a bank or credit card statement PDF.')
         }
       } catch {
         // Network hiccup — keep polling
