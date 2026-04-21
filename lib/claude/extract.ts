@@ -36,7 +36,7 @@ IMPORTANT — DO NOT extract or include anywhere in your response:
 
 Return ONLY a valid JSON object with this exact structure:
 {
-  "bankName": "string — detected bank name e.g. DBS, OCBC, UOB, Maybank, CIMB, Standard Chartered",
+  "bankName": "string — full card or account label. If the statement names the card product, include it (e.g. 'OCBC 90N Visa', 'DBS Live Fresh', 'UOB One Card', 'Citi PremierMiles'). If no product name is stated, use just the bank name (e.g. 'OCBC', 'DBS').",
   "statementType": "credit_card" or "bank_account",
   "accountLast4": "string — last 4 digits of the account or card number",
   "dateRange": {
