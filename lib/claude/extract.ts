@@ -6,6 +6,7 @@ const client = new Anthropic()
 export interface ExtractResult {
   transactions: ExtractedTransaction[]
   bankName: string
+  cardName: string | null
   statementType: 'credit_card' | 'bank_account'
   accountLast4: string
   dateRange: { start: string; end: string }
@@ -36,7 +37,8 @@ IMPORTANT — DO NOT extract or include anywhere in your response:
 
 Return ONLY a valid JSON object with this exact structure:
 {
-  "bankName": "string — full card or account label. If the statement names the card product, include it (e.g. 'OCBC 90N Visa', 'DBS Live Fresh', 'UOB One Card', 'Citi PremierMiles'). If no product name is stated, use just the bank name (e.g. 'OCBC', 'DBS').",
+  "bankName": "string — bank name only, e.g. 'OCBC', 'DBS', 'UOB', 'Citibank', 'Standard Chartered'",
+  "cardName": "string or null — the card product name found in the statement header or title, e.g. '90N Visa', 'Live Fresh', 'One Card', 'PremierMiles', 'Rewards+'. Look at the top of the statement for lines like 'OCBC 90°N Card', 'DBS Live Fresh Card', etc. Return just the product name without the bank prefix. null if not found.",
   "statementType": "credit_card" or "bank_account",
   "accountLast4": "string — last 4 digits of the account or card number",
   "dateRange": {
@@ -67,6 +69,7 @@ Rules:
 - Genuine cashback from the bank = type "income", category "Cashback".
 - If a field is not present in the statement, use null.
 - FOREIGN CURRENCY: OCBC and other Singapore banks show foreign transactions with the SGD charge on the transaction line, followed by a line "FOREIGN CURRENCY [CODE] [AMOUNT]" — where [CODE] is ANY ISO 4217 currency code (USD, SEK, EUR, GBP, MYR, AUD, JPY, HKD, CNY, DKK, NOK, CHF, etc.). When you see this pattern for ANY currency code, set currency to that code, originalAmount to that foreign value, and amount to the SGD charge on the transaction line above. Do not limit this only to USD — apply it to every currency code you encounter. Other banks may show it inline (e.g. "SEK 89.00 / 11.20 SGD"). Never default to SGD when a foreign currency line is present.
+- CARD NAME: Look at the very first lines of the statement for the card product name. OCBC uses names like "90°N Card", "365 Card", "Frank Card". DBS uses "Live Fresh", "Altitude". UOB uses "One Card", "Absolute". Extract just the product portion into cardName. This is important — do not skip it.
 - Return valid JSON only. No explanation, no markdown, no code fences.
 
 Statement text:
@@ -82,6 +85,7 @@ ${rawText}`,
 
   let parsed: {
     bankName?: string
+    cardName?: string | null
     statementType?: string
     accountLast4?: string
     dateRange?: { start: string; end: string }
@@ -128,6 +132,7 @@ ${rawText}`,
   return {
     transactions,
     bankName: parsed.bankName || 'Unknown Bank',
+    cardName: parsed.cardName ?? null,
     statementType: parsed.statementType === 'credit_card' ? 'credit_card' : 'bank_account',
     accountLast4: parsed.accountLast4 || '0000',
     dateRange: {

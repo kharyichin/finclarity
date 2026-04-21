@@ -124,7 +124,9 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
           type: tx.type,
           transfer_pair_id: tx.transferPairId ?? null,
           account_last4: tx.accountLast4 || extracted.accountLast4,
-          bank_name: extracted.bankName,
+          bank_name: extracted.cardName
+            ? `${extracted.bankName} ${extracted.cardName}`
+            : extracted.bankName,
           month_year: monthYear,
           exchange_rate_source: tx.bankRate ? 'bank' : null,
         }))
@@ -157,7 +159,9 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
       .from('statements')
       .update({
         status: 'complete',
-        bank_name: extracted.bankName,
+        bank_name: extracted.cardName
+          ? `${extracted.bankName} ${extracted.cardName}`
+          : extracted.bankName,
         statement_type: extracted.statementType,
         account_last4: extracted.accountLast4,
         month_year: monthYear,
