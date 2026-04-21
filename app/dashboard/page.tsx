@@ -13,6 +13,7 @@ import { NudgesSection } from '@/components/dashboard/NudgesSection'
 import { MonthSelector } from '@/components/ui/MonthSelector'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
+import { CheckInAnimation } from '@/components/retention/CheckInAnimation'
 import type { MonthlyReport } from '@/types'
 
 type UploadFlow =
@@ -31,6 +32,7 @@ function getCurrentMonth() {
 export default function DashboardPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [flow, setFlow] = useState<UploadFlow>({ stage: 'idle' })
+  const [showCheckIn, setShowCheckIn] = useState(false)
   const [month, setMonth] = useState(getCurrentMonth)
   const [report, setReport] = useState<MonthlyReport | null>(null)
   const [hasUploads, setHasUploads] = useState(false)
@@ -83,6 +85,7 @@ export default function DashboardPage() {
 
   const onSuccess = useCallback(() => {
     setFlow({ stage: 'success' })
+    setShowCheckIn(true)
     fetchReport(month)
   }, [month, fetchReport])
 
@@ -199,7 +202,11 @@ export default function DashboardPage() {
               />
             )}
 
-            {flow.stage === 'success' && <SuccessState onDone={closeModal} />}
+            {flow.stage === 'success' && (
+              showCheckIn
+                ? <CheckInAnimation onDone={() => { setShowCheckIn(false); closeModal() }} />
+                : <SuccessState onDone={closeModal} />
+            )}
 
             {flow.stage === 'duplicate' && (
               <div className="text-center py-4">
