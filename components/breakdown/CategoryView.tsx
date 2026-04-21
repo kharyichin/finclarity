@@ -30,6 +30,14 @@ const CATEGORY_LIGHT = [
   'bg-lime-50 border-lime-100',
 ]
 
+function scrollTo(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function slug(s: string) {
+  return 'cat-' + s.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+}
+
 export function CategoryView({ transactions }: { transactions: Transaction[] }) {
   const groups = new Map<string, Transaction[]>()
 
@@ -66,9 +74,10 @@ export function CategoryView({ transactions }: { transactions: Transaction[] }) 
         {/* Stacked bar */}
         <div className="flex h-3 rounded-full overflow-hidden gap-0.5">
           {totals.map(({ cat, total }, i) => (
-            <div
+            <button
               key={cat}
-              className={`${CATEGORY_COLOURS[i % CATEGORY_COLOURS.length]} transition-all`}
+              onClick={() => scrollTo(slug(cat))}
+              className={`${CATEGORY_COLOURS[i % CATEGORY_COLOURS.length]} transition-all hover:opacity-80 cursor-pointer`}
               style={{ width: `${(total / grandTotal) * 100}%` }}
               title={`${cat}: ${total.toFixed(2)} SGD`}
             />
@@ -78,12 +87,16 @@ export function CategoryView({ transactions }: { transactions: Transaction[] }) 
         {/* Legend */}
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           {totals.map(({ cat, total }, i) => (
-            <div key={cat} className="flex items-center gap-1.5">
+            <button
+              key={cat}
+              onClick={() => scrollTo(slug(cat))}
+              className="flex items-center gap-1.5 hover:opacity-70 transition cursor-pointer"
+            >
               <span className={`inline-block w-2.5 h-2.5 rounded-full ${CATEGORY_COLOURS[i % CATEGORY_COLOURS.length]}`} />
               <span>{getCategoryIcon(cat)}</span>
               <span className="text-xs text-stone-600">{cat}</span>
               <span className="text-xs text-stone-400">{((total / grandTotal) * 100).toFixed(0)}%</span>
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -93,7 +106,7 @@ export function CategoryView({ transactions }: { transactions: Transaction[] }) 
         const total = totals[i].total
         const pct = ((total / grandTotal) * 100).toFixed(0)
         return (
-          <div key={category}>
+          <div key={category} id={slug(category)}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className={`inline-block w-2.5 h-2.5 rounded-full ${CATEGORY_COLOURS[i % CATEGORY_COLOURS.length]}`} />

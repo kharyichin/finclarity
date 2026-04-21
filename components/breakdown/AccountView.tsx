@@ -84,9 +84,10 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
         <div className="flex h-3 rounded-full overflow-hidden gap-0.5">
           {accountTotals.map(({ key, spent }, i) =>
             grandTotal > 0 ? (
-              <div
+              <button
                 key={key}
-                className={`${ACCOUNT_COLOURS[i % ACCOUNT_COLOURS.length]} transition-all`}
+                onClick={() => document.getElementById(`acct-${key}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className={`${ACCOUNT_COLOURS[i % ACCOUNT_COLOURS.length]} transition-all hover:opacity-80 cursor-pointer`}
                 style={{ width: `${(spent / grandTotal) * 100}%` }}
               />
             ) : null
@@ -94,7 +95,11 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
         </div>
         <div className="space-y-1.5">
           {accountTotals.map(({ key, bankName, spent }, i) => (
-            <div key={key} className="flex items-center justify-between">
+            <button
+              key={key}
+              onClick={() => document.getElementById(`acct-${key}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="flex items-center justify-between w-full hover:opacity-70 transition"
+            >
               <div className="flex items-center gap-2">
                 <span className={`inline-block w-2.5 h-2.5 rounded-full shrink-0 ${ACCOUNT_COLOURS[i % ACCOUNT_COLOURS.length]}`} />
                 <span className="text-xs text-stone-700 font-medium">
@@ -105,7 +110,7 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
                 <span className="text-xs text-stone-400">{grandTotal > 0 ? ((spent / grandTotal) * 100).toFixed(0) : 0}%</span>
                 <span className="text-xs font-semibold text-stone-600 w-28 text-right">{spent.toFixed(2)} SGD</span>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -114,7 +119,7 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
       {accountTotals.map(({ key, bankName, spent, all }, i) => {
         const label = getLabel(bankName, key === 'unknown' ? null : key)
         return (
-          <div key={key}>
+          <div key={key} id={`acct-${key}`}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className={`inline-block w-2.5 h-2.5 rounded-full ${ACCOUNT_COLOURS[i % ACCOUNT_COLOURS.length]}`} />
