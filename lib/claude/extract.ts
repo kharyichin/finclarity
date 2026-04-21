@@ -62,7 +62,7 @@ Return ONLY a valid JSON object with this exact structure:
 
 Rules:
 - Extract ALL transaction rows. Do not summarise or skip any.
-- For type: credit card purchases = "expense". Payments/credits = "income". PayNow/FAST/GIRO between own accounts = "transfer".
+- For type: credit card purchases = "expense". Credit card bill payments / balance settlements (e.g. "PAYMENT THANK YOU", "BILL PAYMENT", "GIRO PAYMENT", "AUTOPAY") = "transfer" — these are NOT income, they are the user paying off their card. Cashback, refunds, or reversals = "income". PayNow/FAST/GIRO between own bank accounts = "transfer".
 - If a field is not present in the statement, use null.
 - FOREIGN CURRENCY: OCBC and other Singapore banks show foreign transactions with the SGD charge on the transaction line, followed by a line "FOREIGN CURRENCY [CODE] [AMOUNT]" — where [CODE] is ANY ISO 4217 currency code (USD, SEK, EUR, GBP, MYR, AUD, JPY, HKD, CNY, DKK, NOK, CHF, etc.). When you see this pattern for ANY currency code, set currency to that code, originalAmount to that foreign value, and amount to the SGD charge on the transaction line above. Do not limit this only to USD — apply it to every currency code you encounter. Other banks may show it inline (e.g. "SEK 89.00 / 11.20 SGD"). Never default to SGD when a foreign currency line is present.
 - Return valid JSON only. No explanation, no markdown, no code fences.

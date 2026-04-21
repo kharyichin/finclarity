@@ -11,7 +11,7 @@ const tabs = [
   { id: 'category', label: 'By Category' },
   { id: 'account', label: 'By Account' },
   { id: 'type', label: 'By Type' },
-  { id: 'time', label: 'By Time' },
+  { id: 'time', label: 'By Date' },
 ]
 
 export function BreakdownTabs({
