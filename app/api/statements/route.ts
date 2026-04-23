@@ -12,5 +12,24 @@ export async function GET() {
     .order('uploaded_at', { ascending: false })
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
-  return Response.json(data ?? [])
+
+  // For each statement, fetch distinct accounts from transactions
+  const statements = data ?? []
+  const enriched = await Promise.all(
+    statements.map(async (s) => {
+      const { data: txAccounts } = await supabase
+        .from('transactions')
+        .select('account_last4, bank_name')
+        .eq('statement_id', s.id)
+        .not('account_last4', 'is', null)
+
+      const accounts = [...new Map(
+        (txAccounts ?? []).map((t) => [t.account_last4, { last4: t.account_last4, bank_name: t.bank_name }])
+      ).values()]
+
+      return { ...s, accounts }
+    })
+  )
+
+  return Response.json(enriched)
 }

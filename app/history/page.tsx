@@ -5,6 +5,10 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
 import type { Statement } from '@/types'
 
+interface StatementWithAccounts extends Statement {
+  accounts?: Array<{ last4: string; bank_name: string | null }>
+}
+
 const STATUS_LABELS: Record<string, { label: string; colour: string }> = {
   complete: { label: 'Complete', colour: 'text-green-600 bg-green-50' },
   processing: { label: 'Processing', colour: 'text-amber-600 bg-amber-50' },
@@ -13,8 +17,10 @@ const STATUS_LABELS: Record<string, { label: string; colour: string }> = {
 }
 
 export default function HistoryPage() {
-  const [statements, setStatements] = useState<Statement[]>([])
+  const [statements, setStatements] = useState<StatementWithAccounts[]>([])
   const [loading, setLoading] = useState(true)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -25,6 +31,19 @@ export default function HistoryPage() {
     }
     load()
   }, [])
+
+  async function handleDelete(id: string) {
+    setDeleting(id)
+    try {
+      const res = await fetch(`/api/statements/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        setStatements((prev) => prev.filter((s) => s.id !== id))
+        setConfirmDelete(null)
+      }
+    } finally {
+      setDeleting(null)
+    }
+  }
 
   return (
     <div className="flex h-screen bg-stone-50">
@@ -50,21 +69,64 @@ export default function HistoryPage() {
                   const status = STATUS_LABELS[s.status] ?? { label: s.status, colour: 'text-stone-500 bg-stone-50' }
                   const fmt = (d: string) => new Date(d).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' })
                   const period = s.period_start && s.period_end ? `${fmt(s.period_start)} – ${fmt(s.period_end)}` : s.month_year ?? '—'
+                  // Strip bank prefix (first word) from stored bank_name to get just the card product name
+                  const cardLabel = (txBankName: string | null, last4: string) => {
+                    if (!txBankName) return `···${last4}`
+                    const cardOnly = txBankName.trim().split(/\s+/).slice(1).join(' ').trim()
+                    return cardOnly ? `${cardOnly} ···${last4}` : `···${last4}`
+                  }
+                  const multiCard = s.accounts && s.accounts.length > 1
                   return (
-                    <div key={s.id} className="flex items-center justify-between px-5 py-4">
-                      <div>
-                        <p className="text-sm font-medium text-stone-800">
-                          {s.bank_name ?? 'Unknown Bank'}{s.account_last4 ? ` ···${s.account_last4}` : ''}
-                        </p>
-                        <p className="text-xs text-stone-400 mt-0.5">{period}</p>
-                        <p className="text-xs text-stone-400">{s.statement_type === 'credit_card' ? 'Credit card' : s.statement_type === 'bank_account' ? 'Bank account' : '—'}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${status.colour}`}>
-                          {status.label}
-                        </span>
-                        <p className="text-xs text-stone-300 mt-1">{fmt(s.uploaded_at)}</p>
-                      </div>
+                    <div key={s.id} className="px-5 py-4">
+                      {confirmDelete === s.id ? (
+                        <div className="flex items-center justify-between gap-4">
+                          <p className="text-sm text-stone-700">Delete this statement and all its transactions?</p>
+                          <div className="flex gap-2 shrink-0">
+                            <button
+                              onClick={() => handleDelete(s.id)}
+                              disabled={deleting === s.id}
+                              className="rounded-lg bg-rose-600 text-white px-3 py-1.5 text-xs font-medium hover:bg-rose-700 transition disabled:opacity-50"
+                            >
+                              {deleting === s.id ? 'Deleting…' : 'Delete'}
+                            </button>
+                            <button
+                              onClick={() => setConfirmDelete(null)}
+                              className="rounded-lg border border-stone-200 px-3 py-1.5 text-xs text-stone-600 hover:bg-stone-50 transition"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-stone-800">
+                              {s.bank_name ?? 'Unknown Bank'}
+                            </p>
+                            {multiCard ? (
+                              <p className="text-xs text-stone-400 mt-0.5">
+                                {s.accounts!.map((a) => cardLabel(a.bank_name, a.last4)).join('  ·  ')}
+                              </p>
+                            ) : s.account_last4 ? (
+                              <p className="text-xs text-stone-400 mt-0.5">···{s.account_last4}</p>
+                            ) : null}
+                            <p className="text-xs text-stone-400 mt-0.5">{period}</p>
+                            <p className="text-xs text-stone-400">{s.statement_type === 'credit_card' ? 'Credit card' : s.statement_type === 'bank_account' ? 'Bank account' : '—'}</p>
+                          </div>
+                          <div className="text-right flex flex-col items-end gap-2">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${status.colour}`}>
+                              {status.label}
+                            </span>
+                            <p className="text-xs text-stone-300">{fmt(s.uploaded_at)}</p>
+                            <button
+                              onClick={() => setConfirmDelete(s.id)}
+                              className="text-xs text-stone-300 hover:text-rose-500 transition"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )
                 })}

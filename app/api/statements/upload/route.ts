@@ -94,6 +94,9 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
       return
     }
 
+    const distinctAccounts = [...new Set(transactions.map((t) => t.accountLast4).filter(Boolean))]
+    const isConsolidated = distinctAccounts.length > 1
+
     const expenses = transactions.filter((t) => t.type === 'expense')
     // Reversals cancel a previous charge — exclude from savings total
     const trueIncome = transactions.filter(
@@ -167,11 +170,13 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
       .from('statements')
       .update({
         status: 'complete',
-        bank_name: extracted.cardName
-          ? `${extracted.bankName} ${extracted.cardName}`
-          : extracted.bankName,
+        bank_name: isConsolidated
+          ? extracted.bankName
+          : extracted.cardName
+            ? `${extracted.bankName} ${extracted.cardName}`
+            : extracted.bankName,
         statement_type: extracted.statementType,
-        account_last4: extracted.accountLast4,
+        account_last4: isConsolidated ? null : extracted.accountLast4,
         month_year: monthYear,
         period_start: extracted.dateRange.start,
         period_end: extracted.dateRange.end,
