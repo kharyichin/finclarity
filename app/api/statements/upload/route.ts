@@ -116,6 +116,7 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
       currentMonth: currentSummary,
       priorMonth: null,
       last3Months: null,
+      statementType: extracted.statementType,
     })
 
     if (transactions.length > 0) {

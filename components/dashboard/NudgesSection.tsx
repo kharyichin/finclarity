@@ -8,16 +8,21 @@ export function NudgesSection({ nudges }: NudgesSectionProps) {
   if (!nudges || nudges.length === 0) return null
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-6">
-      <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-4">What to Watch For Next Month</p>
-      <ul className="space-y-3">
-        {nudges.map((nudge, i) => (
-          <li key={i} className="flex gap-3 items-start">
-            <span className="mt-0.5 text-green-500">→</span>
-            <p className="text-sm text-stone-600 leading-relaxed">{nudge.message}</p>
-          </li>
-        ))}
-      </ul>
+    <div className="space-y-3">
+      <p className="text-xs font-medium text-stone-400 uppercase tracking-wide px-1">Coming up</p>
+      {nudges.map((nudge, i) => (
+        <div key={i} className="rounded-2xl border border-green-100 bg-green-50 p-4 flex gap-3 items-start">
+          <span className="text-lg shrink-0 mt-0.5">🌿</span>
+          <div className="space-y-1">
+            <p className="text-sm text-stone-700 leading-relaxed">{nudge.message}</p>
+            {nudge.predicted_date && (
+              <span className="inline-block rounded-full bg-white border border-green-200 text-green-700 text-xs px-2.5 py-0.5">
+                Around {new Date(nudge.predicted_date).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
+              </span>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

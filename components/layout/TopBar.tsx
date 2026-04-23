@@ -9,7 +9,7 @@ interface TopBarProps {
 export function TopBar({ onUpload }: TopBarProps) {
   return (
     <header className="h-14 border-b border-stone-200 bg-white flex items-center justify-between px-6 gap-4">
-      <div />
+      <span className="font-semibold text-stone-800 text-sm">FinClarity</span>
       <div className="flex items-center gap-4">
         <StreakCounter />
         {onUpload && (

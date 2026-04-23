@@ -31,7 +31,7 @@ function ExportSection({ isSignedIn }: { isSignedIn: boolean }) {
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="text-sm border border-stone-200 rounded-lg px-3 py-1.5 text-stone-700 focus:outline-none focus:ring-1 focus:ring-green-500"
+              className="text-sm border border-stone-200 rounded-xl px-3 py-1.5 text-stone-700 focus:outline-none focus:ring-1 focus:ring-green-500 bg-white"
             >
               {months.map(({ value, label }) => (
                 <option key={value} value={value}>{label}</option>
@@ -222,7 +222,7 @@ export default function SettingsPage() {
                       value={profile.check_in_day ?? ''}
                       onChange={(e) => save({ check_in_day: e.target.value ? Number(e.target.value) : null })}
                       disabled={saving}
-                      className="text-sm border border-stone-200 rounded-lg px-3 py-1.5 text-stone-700 focus:outline-none focus:ring-1 focus:ring-green-500"
+                      className="text-sm border border-stone-200 rounded-xl px-3 py-1.5 text-stone-700 focus:outline-none focus:ring-1 focus:ring-green-500 bg-white"
                     >
                       <option value="">No reminder</option>
                       {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
@@ -235,6 +235,9 @@ export default function SettingsPage() {
                 )}
               </div>
             </section>
+
+            {/* Export */}
+            <ExportSection isSignedIn={!!profile.auth_email} />
 
             {/* Theme */}
             <section className="rounded-2xl bg-white border border-stone-100">
@@ -269,7 +272,7 @@ export default function SettingsPage() {
                     <select
                       value={profile.age_bracket ?? ''}
                       onChange={(e) => save({ age_bracket: e.target.value || null })}
-                      className="text-sm border border-stone-200 rounded-lg px-3 py-1.5 text-stone-700 focus:outline-none focus:ring-1 focus:ring-green-500"
+                      className="text-sm border border-stone-200 rounded-xl px-3 py-1.5 text-stone-700 focus:outline-none focus:ring-1 focus:ring-green-500 bg-white"
                     >
                       <option value="">Prefer not to say</option>
                       {['18-24','25-34','35-44','45-54','55+'].map(b => <option key={b} value={b}>{b}</option>)}
@@ -280,7 +283,7 @@ export default function SettingsPage() {
                     <select
                       value={profile.gender ?? ''}
                       onChange={(e) => save({ gender: e.target.value || null })}
-                      className="text-sm border border-stone-200 rounded-lg px-3 py-1.5 text-stone-700 focus:outline-none focus:ring-1 focus:ring-green-500"
+                      className="text-sm border border-stone-200 rounded-xl px-3 py-1.5 text-stone-700 focus:outline-none focus:ring-1 focus:ring-green-500 bg-white"
                     >
                       <option value="">Prefer not to say</option>
                       <option value="female">Female</option>
@@ -300,16 +303,6 @@ export default function SettingsPage() {
                 </div>
               </div>
             </section>
-
-            {/* Privacy */}
-            <section className="rounded-2xl bg-stone-50 border border-stone-100 px-5 py-4 space-y-2">
-              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Privacy & Security</p>
-              <p className="text-xs text-stone-500">Your PDF is read once and discarded — it is never stored. Passwords for protected PDFs are used for decryption only and never saved. Transactions are stored without any personally identifiable information (no names, addresses, or NRIC).</p>
-              <p className="text-xs text-stone-400">FinClarity v{APP_VERSION}</p>
-            </section>
-
-            {/* Export */}
-            <ExportSection isSignedIn={!!profile.auth_email} />
 
             {/* Delete account */}
             <section className="rounded-2xl bg-white border border-rose-100">
@@ -345,6 +338,13 @@ export default function SettingsPage() {
                   </button>
                 )}
               </div>
+            </section>
+
+            {/* Privacy */}
+            <section className="rounded-2xl bg-stone-50 border border-stone-100 px-5 py-4 space-y-2">
+              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Privacy & Security</p>
+              <p className="text-xs text-stone-500">Your PDF is read once and discarded — it is never stored. Passwords for protected PDFs are used for decryption only and never saved. Transactions are stored without any personally identifiable information (no names, addresses, or NRIC).</p>
+              <p className="text-xs text-stone-400">FinClarity v{APP_VERSION}</p>
             </section>
           </div>
         </main>

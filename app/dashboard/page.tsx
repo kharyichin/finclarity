@@ -29,12 +29,25 @@ function getCurrentMonth() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 }
 
+function getLastMonth() {
+  const now = new Date()
+  const d = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+function getMonthHeading(month: string) {
+  if (month === getCurrentMonth()) return 'This Month'
+  if (month === getLastMonth()) return 'Last Month'
+  return 'Selected Month'
+}
+
 export default function DashboardPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [flow, setFlow] = useState<UploadFlow>({ stage: 'idle' })
   const [showCheckIn, setShowCheckIn] = useState(false)
   const [month, setMonth] = useState(getCurrentMonth)
   const [report, setReport] = useState<MonthlyReport | null>(null)
+  const [creditCardOnly, setCreditCardOnly] = useState(false)
   const [hasUploads, setHasUploads] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -45,7 +58,9 @@ export default function DashboardPage() {
       const data = await res.json()
       if (data.empty) {
         setReport(null)
+        setCreditCardOnly(false)
       } else {
+        setCreditCardOnly(data.creditCardOnly ?? false)
         setReport(data)
         setHasUploads(true)
       }
@@ -102,7 +117,7 @@ export default function DashboardPage() {
           <div className="max-w-2xl mx-auto space-y-5">
 
             <div className="flex items-center justify-between">
-              <h1 className="text-lg font-semibold text-stone-800">Your Month</h1>
+              <h1 className="text-lg font-semibold text-stone-800">{getMonthHeading(month)}</h1>
               <MonthSelector value={month} onChange={setMonth} />
             </div>
 
@@ -126,6 +141,7 @@ export default function DashboardPage() {
                 <SummaryCards
                   data={report?.summary_cards_json ?? null}
                   hasComparison={hasMultipleMonths}
+                  creditCardOnly={creditCardOnly}
                 />
 
                 <ObservationsPanel

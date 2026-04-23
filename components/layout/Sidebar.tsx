@@ -21,13 +21,10 @@ export function Sidebar({ onUpload }: { onUpload?: () => void }) {
         collapsed ? 'w-14' : 'w-52'
       }`}
     >
-      <div className="flex items-center justify-between px-4 py-4 border-b border-stone-100">
-        {!collapsed && (
-          <span className="font-semibold text-stone-800 text-sm">FinClarity</span>
-        )}
+      <div className="flex items-center justify-end px-4 py-4 border-b border-stone-100">
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="text-stone-400 hover:text-stone-600 transition text-lg leading-none ml-auto"
+          className="text-stone-400 hover:text-stone-600 transition text-lg leading-none"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? '›' : '‹'}

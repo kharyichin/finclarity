@@ -21,5 +21,15 @@ export async function GET(request: NextRequest) {
   }
   if (error) return Response.json({ error: error.message }, { status: 500 })
 
-  return Response.json(data)
+  const { data: stmts } = await supabase
+    .from('statements')
+    .select('statement_type')
+    .eq('user_id', user.id)
+    .eq('month_year', month)
+    .eq('status', 'complete')
+
+  const hasBankAccount = stmts?.some((s) => s.statement_type === 'bank_account') ?? false
+  const creditCardOnly = !hasBankAccount
+
+  return Response.json({ ...data, creditCardOnly })
 }

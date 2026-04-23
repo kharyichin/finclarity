@@ -7,13 +7,15 @@ export async function generateReport(params: {
   currentMonth: TransactionSummary
   priorMonth: TransactionSummary | null
   last3Months: TransactionSummary[] | null
+  statementType?: string | null
 }): Promise<{
   narrative: string
   summaryCards: SummaryCards
   observations: Observation[]
   nudges: Nudge[]
 }> {
-  const { currentMonth, priorMonth, last3Months } = params
+  const { currentMonth, priorMonth, last3Months, statementType } = params
+  const creditCardOnly = statementType === 'credit_card'
 
   const priorContext = priorMonth
     ? `Prior month (${priorMonth.month_year}): spent SGD ${priorMonth.total_spent.toFixed(2)}, saved SGD ${priorMonth.total_saved.toFixed(2)}, top category: ${priorMonth.top_category}.`
@@ -37,19 +39,22 @@ export async function generateReport(params: {
 Generate a monthly financial summary report. Return ONLY valid JSON, no markdown, no explanation.
 
 Current month: ${currentMonth.month_year}
+Statement type: ${creditCardOnly ? 'Credit card only — no bank account data uploaded. Income and savings figures are NOT available and must not be mentioned.' : 'Bank account data available — income and savings figures are reliable.'}
 Total spent: SGD ${currentMonth.total_spent.toFixed(2)}
-Total income: SGD ${currentMonth.total_saved.toFixed(2)}
+${creditCardOnly ? '' : `Total income: SGD ${currentMonth.total_saved.toFixed(2)}`}
 Top spending category: ${currentMonth.top_category}
 Category breakdown: ${topCategories}
 ${priorContext}
 ${historyContext}
 
+${creditCardOnly ? 'IMPORTANT: This is a credit card statement only. Do NOT mention savings, income, money earned, or money saved. Focus entirely on spending patterns and categories.' : ''}
+
 Return this exact JSON structure:
 {
-  "narrative": "2-3 warm, conversational sentences. Lead with something positive or a genuine observation. If the month was tough, acknowledge it honestly then pivot to something constructive. Never preachy. Sound like a friend, not a bank.",
+  "narrative": "2-3 warm, conversational sentences. Lead with something positive or a genuine observation. If the month was tough, acknowledge it honestly then pivot to something constructive. Never preachy. Sound like a friend, not a bank.${creditCardOnly ? ' Do not mention savings or income.' : ''}",
   "summaryCards": {
     "spent": ${currentMonth.total_spent},
-    "saved": ${currentMonth.total_saved},
+    "saved": ${creditCardOnly ? 0 : currentMonth.total_saved},
     "top_category": "${currentMonth.top_category || 'Other'}",
     "watchout": "One short forward-looking note — something to keep an eye on next month. Warm tone, not alarming."
   },
