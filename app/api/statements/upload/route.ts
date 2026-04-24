@@ -20,7 +20,8 @@ export async function POST(request: Request) {
     }
 
     // Ensure users row exists — trigger may not fire on new Supabase projects
-    await supabase.from('users').upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true })
+    const { error: upsertErr } = await supabase.from('users').upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true })
+    if (upsertErr) console.error('[upload] users upsert error:', upsertErr.code, upsertErr.message)
 
     const formData = await request.formData()
     const file = formData.get('file') as File | null
@@ -59,8 +60,8 @@ export async function POST(request: Request) {
       .single()
 
     if (error || !statement) {
-      console.error('[upload] insert statement error:', error?.message)
-      return Response.json({ error: 'Failed to create statement' }, { status: 500 })
+      console.error('[upload] insert statement error:', error?.code, error?.message)
+      return Response.json({ error: 'Failed to create statement', detail: error?.message, code: error?.code }, { status: 500 })
     }
 
     await runPipeline(statement.id, fileBytes, password)
