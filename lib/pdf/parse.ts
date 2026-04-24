@@ -35,17 +35,20 @@ export async function parsePDF(
       fullText += lineText + '\n'
     }
 
+    const trimmed = fullText.trim()
+    console.log('[parsePDF] extracted', pageCount, 'pages,', trimmed.length, 'chars')
     return {
-      text: fullText.trim(),
+      text: trimmed,
       needsPassword: false,
       pageCount,
       dateRange: detectDateRange(fullText),
     }
   } catch (error: unknown) {
-    const err = error as { name?: string }
+    const err = error as { name?: string; message?: string }
     if (err?.name === 'PasswordException') {
       return { text: '', needsPassword: true, pageCount: 0, dateRange: null }
     }
+    console.error('[parsePDF] error:', err?.name, err?.message, error)
     throw error
   }
 }
