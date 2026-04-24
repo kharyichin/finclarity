@@ -6,17 +6,21 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Upsert ensures a users row exists even if the DB trigger didn't fire
-  await supabase.from('users').upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true })
+  // Ensure a users row exists — trigger may not have fired on new projects
+  const { error: upsertError } = await supabase
+    .from('users')
+    .upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true })
+  if (upsertError) console.error('[api/user] upsert error:', upsertError.message)
 
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from('users')
     .select('*')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
-  return Response.json({ ...data, auth_email: user.email })
+  // Return row if found, otherwise return safe defaults
+  const profile = data ?? { id: user.id, theme: 'light', check_in_day: null, age_bracket: null, gender: null, analytics_consent: false }
+  return Response.json({ ...profile, auth_email: user.email })
 }
 
 export async function PATCH(request: NextRequest) {
