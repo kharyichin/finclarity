@@ -6,6 +6,9 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
+  // Upsert ensures a users row exists even if the DB trigger didn't fire
+  await supabase.from('users').upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true })
+
   const { data, error } = await supabase
     .from('users')
     .select('*')
