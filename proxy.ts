@@ -26,11 +26,16 @@ export async function proxy(request: NextRequest) {
   )
 
   // Create an anonymous session on first visit if none exists
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-  console.log('[proxy] session:', session?.user?.id ?? 'none', 'error:', sessionError?.message ?? 'none')
-  if (!session) {
-    const { data, error } = await supabase.auth.signInAnonymously()
-    console.log('[proxy] signInAnonymously result:', data?.user?.id ?? 'no user', 'error:', error?.message ?? 'none')
+  try {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    console.log('[proxy] session:', session?.user?.id ?? 'none', 'error:', sessionError?.message ?? 'none')
+    if (!session) {
+      const { data, error } = await supabase.auth.signInAnonymously()
+      console.log('[proxy] signInAnonymously result:', data?.user?.id ?? 'no user', 'error:', error?.message ?? 'none')
+    }
+  } catch (err) {
+    console.error('[proxy] auth error:', err)
+    // Don't crash the request — just continue without a session
   }
 
   return supabaseResponse
