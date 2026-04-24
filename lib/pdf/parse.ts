@@ -26,7 +26,17 @@ export async function parsePDF(
 
   // Dynamic import avoids module-level crash in Vercel serverless environment
   const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist/legacy/build/pdf.mjs')
-  GlobalWorkerOptions.workerSrc = ''
+
+  // Resolve the worker file path so pdfjs can load it in fake-worker (main-thread) mode
+  try {
+    const { createRequire } = await import('module')
+    const { pathToFileURL } = await import('url')
+    const req = createRequire(import.meta.url)
+    const workerPath = req.resolve('pdfjs-dist/legacy/build/pdf.worker.min.mjs')
+    GlobalWorkerOptions.workerSrc = pathToFileURL(workerPath).href
+  } catch {
+    GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.min.mjs'
+  }
 
   try {
     const loadingTask = getDocument({
