@@ -233,6 +233,13 @@
 - **Learner observations:** Drove multiple product-quality rounds: spotted wrong income classification, flagged reversal accounting issue, asked for pie charts, week bar chart, month picker dropdown, card nicknames, upload button on empty states, scroll anchors. Strong product instinct — thinking about edge cases and UX unprompted.
 - **Active engagement:** Very high. Jade caught 6+ issues herself and directed every UI improvement. Iterated specifically on: category chart, account chart, week date labels, foreign currency display, tab naming (By Time → By Date), spending total accuracy.
 
+### Step 10: Deploy to Vercel
+- **What was built:** Vercel project linked (`kharyichins-projects/my-hackathon-project`). All 4 env vars added via Vercel dashboard (Supabase URL, Supabase anon key, Anthropic API key, Resend API key). Outstanding step 9 polish commits pushed to GitHub. Redeployed successfully — build passed TypeScript and all 20 routes deployed. Cron job (`/api/cron/reminders`, daily 01:00 UTC) registered in Vercel. Live at `https://my-hackathon-project-mu.vercel.app`.
+- **Issues encountered:** First deployment failed (build error) because env vars were not set on Vercel. Resolved by adding all 4 env vars and redeploying. Jade also didn't initially have the Resend API key — she found it in her Resend dashboard.
+- **Verification:** Jade confirmed full upload flow works on the live URL.
+- **Issue flagged by learner:** No login module for users who have already created an account — they can upload and sign up but can't log back in. Flagged for /iterate.
+- **Comprehension check:** Asked what happens to anonymous user data if they skip "save your progress" and close the browser. Answered "Data is lost" — corrected: data persists in Supabase under the anonymous user ID via session cookie; "save your progress" is a conversion nudge, not a genuine data-loss warning.
+
 ### Step 1: Database schema
 - **What was built:** `supabase/schema.sql` with all 6 tables (`users`, `statements`, `transactions`, `monthly_reports`, `check_ins`, `exchange_rates`). Includes foreign keys, cascade deletes, unique constraints, and a trigger to auto-create a `public.users` row when Supabase creates any auth user.
 - **Schema correction mid-step:** Initial draft was missing the `auth.users` linkage (needed for anonymous auth to work) and the period duplicate constraint on `statements`. Both were caught before verification and fixed.

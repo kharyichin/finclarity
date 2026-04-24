@@ -66,7 +66,7 @@
   Acceptance: Streak counter displays correctly in TopBar after first upload. Check-in animation fires after uploading for a new month. Settings page saves theme preference (page reloads in dark/light mode). Delete account removes all data and redirects to demo. Upload history lists all statements. CSV export downloads a valid file.
   Verify: Upload a second statement for a different month — confirm streak counter increments. Toggle theme in settings — confirm it persists on page refresh. Click delete account (use a test account), confirm all Supabase rows are removed. Download CSV export — open in a spreadsheet app and confirm transactions appear correctly.
 
-- [ ] **10. Deploy to Vercel**
+- [x] **10. Deploy to Vercel**
   Spec ref: `spec.md > Runtime & Deployment`
   What to build: Create a Vercel account (if not already set up) and link to your GitHub repository. Add all four environment variables in Vercel project settings (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY`). Deploy via Vercel dashboard or `vercel deploy` CLI. Confirm `vercel.json` cron job config is present. Test the full upload flow on the live URL — not just localhost.
   Acceptance: App is live at a `vercel.app` URL. The full upload flow works on the deployed URL (not just localhost). Cron job appears in Vercel dashboard under the project's Cron Jobs tab.
