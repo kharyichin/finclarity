@@ -19,6 +19,9 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Ensure users row exists — trigger may not fire on new Supabase projects
+    await supabase.from('users').upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true })
+
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const password = (formData.get('password') as string) || undefined
