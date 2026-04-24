@@ -1,10 +1,3 @@
-// pdfjs-dist recommends using the legacy build in Node.js environments
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/legacy/build/pdf.mjs'
-
-// Empty string disables the Web Worker and forces pdfjs into fake-worker (main-thread) mode,
-// which is correct for Node.js serverless environments like Vercel where there is no DOM Worker.
-GlobalWorkerOptions.workerSrc = ''
-
 export async function parsePDF(
   fileBytes: Buffer,
   password?: string
@@ -14,6 +7,10 @@ export async function parsePDF(
   pageCount: number
   dateRange: { start: Date; end: Date } | null
 }> {
+  // Dynamic import avoids module-level crash in Vercel serverless environment
+  const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist/legacy/build/pdf.mjs')
+  GlobalWorkerOptions.workerSrc = ''
+
   try {
     const loadingTask = getDocument({
       data: new Uint8Array(fileBytes),
