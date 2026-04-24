@@ -40,17 +40,22 @@ export async function POST(request: Request) {
       return Response.json({ statement_id: existingStatementId })
     }
 
-    // SHA-256 duplicate check
+    // SHA-256 duplicate check — only block if the statement completed successfully
     const fileHash = crypto.createHash('sha256').update(fileBytes).digest('hex')
     const { data: existing } = await supabase
       .from('statements')
-      .select('id')
+      .select('id, status')
       .eq('user_id', user.id)
       .eq('file_hash', fileHash)
       .maybeSingle()
 
-    if (existing) {
+    if (existing?.status === 'complete') {
       return Response.json({ duplicate: true, existing_id: existing.id })
+    }
+
+    // If a failed/stuck statement exists for this hash, delete it and re-process
+    if (existing) {
+      await supabase.from('statements').delete().eq('id', existing.id)
     }
 
     const { data: statement, error } = await supabase
