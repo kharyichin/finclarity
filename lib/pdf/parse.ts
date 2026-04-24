@@ -7,6 +7,23 @@ export async function parsePDF(
   pageCount: number
   dateRange: { start: Date; end: Date } | null
 }> {
+  // DOMMatrix is a browser API required by pdfjs but absent in Node.js serverless environments
+  if (typeof globalThis.DOMMatrix === 'undefined') {
+    (globalThis as Record<string, unknown>).DOMMatrix = class DOMMatrix {
+      a=1;b=0;c=0;d=1;e=0;f=0
+      m11=1;m12=0;m13=0;m14=0;m21=0;m22=1;m23=0;m24=0
+      m31=0;m32=0;m33=1;m34=0;m41=0;m42=0;m43=0;m44=1
+      is2D=true;isIdentity=true
+      constructor(_init?: unknown) {}
+      multiply() { return this }
+      translate() { return this }
+      scale() { return this }
+      rotate() { return this }
+      inverse() { return this }
+      transformPoint(p: {x?:number;y?:number}) { return { x: p?.x??0, y: p?.y??0, z: 0, w: 1 } }
+    }
+  }
+
   // Dynamic import avoids module-level crash in Vercel serverless environment
   const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist/legacy/build/pdf.mjs')
   GlobalWorkerOptions.workerSrc = ''
