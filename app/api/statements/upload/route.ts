@@ -9,57 +9,63 @@ import { detectTransfers } from '@/lib/utils/transfers'
 import type { TransactionSummary } from '@/types'
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  if (!user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const formData = await request.formData()
+    const file = formData.get('file') as File | null
+    const password = (formData.get('password') as string) || undefined
+    const existingStatementId = formData.get('statement_id') as string | null
+
+    if (!file) {
+      return Response.json({ error: 'No file provided' }, { status: 400 })
+    }
+
+    const fileBytes = Buffer.from(await file.arrayBuffer())
+
+    // Password retry — re-run pipeline on existing statement
+    if (existingStatementId) {
+      await runPipeline(existingStatementId, fileBytes, password)
+      return Response.json({ statement_id: existingStatementId })
+    }
+
+    // SHA-256 duplicate check
+    const fileHash = crypto.createHash('sha256').update(fileBytes).digest('hex')
+    const { data: existing } = await supabase
+      .from('statements')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('file_hash', fileHash)
+      .maybeSingle()
+
+    if (existing) {
+      return Response.json({ duplicate: true, existing_id: existing.id })
+    }
+
+    const { data: statement, error } = await supabase
+      .from('statements')
+      .insert({ user_id: user.id, file_hash: fileHash, status: 'processing' })
+      .select('id')
+      .single()
+
+    if (error || !statement) {
+      console.error('[upload] insert statement error:', error?.message)
+      return Response.json({ error: 'Failed to create statement' }, { status: 500 })
+    }
+
+    await runPipeline(statement.id, fileBytes, password)
+    return Response.json({ statement_id: statement.id })
+  } catch (err) {
+    console.error('[upload] unhandled error:', err)
+    return Response.json({ error: 'Internal server error', detail: String(err) }, { status: 500 })
   }
-
-  const formData = await request.formData()
-  const file = formData.get('file') as File | null
-  const password = (formData.get('password') as string) || undefined
-  const existingStatementId = formData.get('statement_id') as string | null
-
-  if (!file) {
-    return Response.json({ error: 'No file provided' }, { status: 400 })
-  }
-
-  const fileBytes = Buffer.from(await file.arrayBuffer())
-
-  // Password retry — re-run pipeline on existing statement
-  if (existingStatementId) {
-    await runPipeline(existingStatementId, fileBytes, password)
-    return Response.json({ statement_id: existingStatementId })
-  }
-
-  // SHA-256 duplicate check
-  const fileHash = crypto.createHash('sha256').update(fileBytes).digest('hex')
-  const { data: existing } = await supabase
-    .from('statements')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('file_hash', fileHash)
-    .maybeSingle()
-
-  if (existing) {
-    return Response.json({ duplicate: true, existing_id: existing.id })
-  }
-
-  const { data: statement, error } = await supabase
-    .from('statements')
-    .insert({ user_id: user.id, file_hash: fileHash, status: 'processing' })
-    .select('id')
-    .single()
-
-  if (error || !statement) {
-    return Response.json({ error: 'Failed to create statement' }, { status: 500 })
-  }
-
-  await runPipeline(statement.id, fileBytes, password)
-  return Response.json({ statement_id: statement.id })
 }
 
 async function runPipeline(statementId: string, fileBytes: Buffer, password?: string) {
