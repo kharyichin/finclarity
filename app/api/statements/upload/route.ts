@@ -1,3 +1,5 @@
+export const maxDuration = 120
+
 import crypto from 'crypto'
 import { createClient } from '@/lib/supabase/server'
 import { parsePDF } from '@/lib/pdf/parse'

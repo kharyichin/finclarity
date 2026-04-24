@@ -1,9 +1,9 @@
 // pdfjs-dist recommends using the legacy build in Node.js environments
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/legacy/build/pdf.mjs'
 
-// In Next.js API routes (Node.js), browser Web Worker is unavailable.
-// pdfjs falls back to its "fake worker" which uses dynamic import() of this module specifier.
-GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.min.mjs'
+// Empty string disables the Web Worker and forces pdfjs into fake-worker (main-thread) mode,
+// which is correct for Node.js serverless environments like Vercel where there is no DOM Worker.
+GlobalWorkerOptions.workerSrc = ''
 
 export async function parsePDF(
   fileBytes: Buffer,
