@@ -6,9 +6,11 @@ interface Props {
   onStatementCreated: (statementId: string, file: File) => void
   onDuplicate: () => void
   onError: (message: string) => void
+  onAnonymousSuccess?: () => void
+  onNeedsPasswordAnonymous?: (file: File) => void
 }
 
-export function UploadZone({ onStatementCreated, onDuplicate, onError }: Props) {
+export function UploadZone({ onStatementCreated, onDuplicate, onError, onAnonymousSuccess, onNeedsPasswordAnonymous }: Props) {
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -33,6 +35,17 @@ export function UploadZone({ onStatementCreated, onDuplicate, onError }: Props) 
       }
       if (data.error) {
         onError(data.error)
+        return
+      }
+      // Anonymous user: server processed everything in memory, no DB writes
+      if (data.anonymous) {
+        sessionStorage.setItem('finclarity_pending_upload', JSON.stringify(data))
+        onAnonymousSuccess?.()
+        return
+      }
+      // Anonymous user: PDF is password-protected, no statement_id exists
+      if (data.needsPassword) {
+        onNeedsPasswordAnonymous?.(file)
         return
       }
       onStatementCreated(data.statement_id, file)

@@ -19,10 +19,6 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Ensure users row exists — trigger may not fire on new Supabase projects
-    const { error: upsertErr } = await supabase.from('users').upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true })
-    if (upsertErr) console.error('[upload] users upsert error:', upsertErr.code, upsertErr.message)
-
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const password = (formData.get('password') as string) || undefined
@@ -33,6 +29,16 @@ export async function POST(request: Request) {
     }
 
     const fileBytes = Buffer.from(await file.arrayBuffer())
+
+    // Anonymous users: run full pipeline in memory, never write to DB
+    if (user.is_anonymous) {
+      const result = await runAnonymousPipeline(fileBytes, password)
+      return Response.json(result)
+    }
+
+    // Ensure users row exists — trigger may not fire on new Supabase projects
+    const { error: upsertErr } = await supabase.from('users').upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true })
+    if (upsertErr) console.error('[upload] users upsert error:', upsertErr.code, upsertErr.message)
 
     // Password retry — re-run pipeline on existing statement
     if (existingStatementId) {
@@ -213,4 +219,60 @@ function getTopCategory(expenses: Array<{ category: string; amount: number }>): 
     totals[tx.category] = (totals[tx.category] ?? 0) + tx.amount
   }
   return Object.entries(totals).sort(([, a], [, b]) => b - a)[0]?.[0] ?? 'None'
+}
+
+async function runAnonymousPipeline(fileBytes: Buffer, password?: string): Promise<object> {
+  try {
+    const parsed = await parsePDF(fileBytes, password)
+
+    if (parsed.needsPassword) {
+      return { needsPassword: true }
+    }
+
+    const extracted = await extractTransactions(parsed.text)
+    const monthYear = extracted.dateRange.start.substring(0, 7)
+    const transactions = detectTransfers(extracted.transactions)
+
+    if (transactions.length === 0) {
+      return { error: "No transactions found. Make sure you're uploading a bank or credit card statement PDF." }
+    }
+
+    const expenses = transactions.filter((t) => t.type === 'expense')
+    const trueIncome = transactions.filter(
+      (t) => t.type === 'income' && t.category !== 'Refund & Reversal'
+    )
+    const topCategory = getTopCategory(expenses)
+
+    const currentSummary: TransactionSummary = {
+      month_year: monthYear,
+      total_spent: expenses.reduce((sum, t) => sum + t.amount, 0),
+      total_saved: trueIncome.reduce((sum, t) => sum + t.amount, 0),
+      top_category: topCategory,
+      transactions: [],
+    }
+
+    const report = await generateReport({
+      currentMonth: currentSummary,
+      priorMonth: null,
+      last3Months: null,
+      statementType: extracted.statementType,
+    })
+
+    return {
+      anonymous: true,
+      report: {
+        month_year: monthYear,
+        narrative_text: report.narrative,
+        summary_cards_json: report.summaryCards,
+        observations_json: report.observations,
+        nudges_json: report.nudges,
+        generated_at: new Date().toISOString(),
+        prompt_version: '1.0',
+      },
+      creditCardOnly: extracted.statementType === 'credit_card',
+    }
+  } catch (err) {
+    console.error('[anonymous pipeline]', err)
+    return { error: 'Processing failed. Please try again.' }
+  }
 }

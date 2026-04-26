@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { UploadZone } from '@/components/upload/UploadZone'
 import { PasswordPrompt } from '@/components/upload/PasswordPrompt'
 import { ProcessingState } from '@/components/upload/ProcessingState'
@@ -20,6 +21,7 @@ type UploadFlow =
   | { stage: 'idle' }
   | { stage: 'processing'; statementId: string; file: File }
   | { stage: 'needs_password'; statementId: string; file: File }
+  | { stage: 'needs_password_anonymous'; file: File }
   | { stage: 'success' }
   | { stage: 'duplicate' }
   | { stage: 'error'; message: string }
@@ -50,6 +52,26 @@ export default function DashboardPage() {
   const [creditCardOnly, setCreditCardOnly] = useState(false)
   const [hasUploads, setHasUploads] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [isAnonymous, setIsAnonymous] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
+
+  function loadAnonymousData() {
+    const pending = sessionStorage.getItem('finclarity_pending_upload')
+    if (pending) {
+      try {
+        const parsed = JSON.parse(pending)
+        if (parsed.report) {
+          setCreditCardOnly(parsed.creditCardOnly ?? false)
+          setReport(parsed.report)
+          setHasUploads(true)
+          setLoading(false)
+          return
+        }
+      } catch { /* ignore */ }
+    }
+    setReport(null)
+    setLoading(false)
+  }
 
   const fetchReport = useCallback(async (m: string) => {
     setLoading(true)
@@ -71,9 +93,22 @@ export default function DashboardPage() {
     }
   }, [])
 
+  // Auth check on mount — determines whether to use DB or sessionStorage
   useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      const anon = data.user?.is_anonymous ?? false
+      setIsAnonymous(anon)
+      setAuthChecked(true)
+      if (anon) loadAnonymousData()
+    })
+  }, [])
+
+  // Fetch from DB for authenticated users (also re-runs on month change)
+  useEffect(() => {
+    if (!authChecked || isAnonymous) return
     fetchReport(month)
-  }, [month, fetchReport])
+  }, [month, fetchReport, authChecked, isAnonymous])
 
   const openUpload = () => {
     setFlow({ stage: 'idle' })
@@ -104,6 +139,16 @@ export default function DashboardPage() {
     fetchReport(month)
   }, [month, fetchReport])
 
+  const onAnonymousSuccess = useCallback(() => {
+    setFlow({ stage: 'success' })
+    setShowCheckIn(false)
+    loadAnonymousData()
+  }, [])
+
+  const onNeedsPasswordAnonymous = useCallback((file: File) => {
+    setFlow({ stage: 'needs_password_anonymous', file })
+  }, [])
+
   const hasMultipleMonths = false // will be updated in step 9 with check_ins
 
   return (
@@ -115,6 +160,18 @@ export default function DashboardPage() {
 
         <main className="flex-1 overflow-y-auto px-6 py-8">
           <div className="max-w-2xl mx-auto space-y-5">
+
+            {isAnonymous && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                This data is only saved in this browser tab.{' '}
+                <button
+                  onClick={openUpload}
+                  className="font-medium underline underline-offset-2 hover:text-amber-900"
+                >
+                  Create an account to keep it.
+                </button>
+              </div>
+            )}
 
             <div className="flex items-center justify-between">
               <h1 className="text-lg font-semibold text-stone-800">{getMonthHeading(month)}</h1>
@@ -170,7 +227,7 @@ export default function DashboardPage() {
               <h3 className="font-semibold text-stone-800">
                 {flow.stage === 'idle' && 'Upload a statement'}
                 {flow.stage === 'processing' && 'Processing'}
-                {flow.stage === 'needs_password' && 'Password required'}
+                {(flow.stage === 'needs_password' || flow.stage === 'needs_password_anonymous') && 'Password required'}
                 {flow.stage === 'success' && 'Done!'}
                 {flow.stage === 'duplicate' && 'Already uploaded'}
                 {flow.stage === 'error' && 'Something went wrong'}
@@ -191,6 +248,8 @@ export default function DashboardPage() {
                 onStatementCreated={onStatementCreated}
                 onDuplicate={() => setFlow({ stage: 'duplicate' })}
                 onError={(msg) => setFlow({ stage: 'error', message: msg })}
+                onAnonymousSuccess={onAnonymousSuccess}
+                onNeedsPasswordAnonymous={onNeedsPasswordAnonymous}
               />
             )}
 
@@ -214,6 +273,14 @@ export default function DashboardPage() {
                       : prev
                   )
                 }
+                onError={(msg) => setFlow({ stage: 'error', message: msg })}
+              />
+            )}
+
+            {flow.stage === 'needs_password_anonymous' && (
+              <PasswordPrompt
+                file={flow.file}
+                onAnonymousSuccess={onAnonymousSuccess}
                 onError={(msg) => setFlow({ stage: 'error', message: msg })}
               />
             )}

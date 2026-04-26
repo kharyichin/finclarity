@@ -3,13 +3,14 @@
 import { useState } from 'react'
 
 interface Props {
-  statementId: string
+  statementId?: string
   file: File
-  onStatementReady: (statementId: string) => void
+  onStatementReady?: (statementId: string) => void
+  onAnonymousSuccess?: () => void
   onError: (message: string) => void
 }
 
-export function PasswordPrompt({ statementId, file, onStatementReady, onError }: Props) {
+export function PasswordPrompt({ statementId, file, onStatementReady, onAnonymousSuccess, onError }: Props) {
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -22,7 +23,7 @@ export function PasswordPrompt({ statementId, file, onStatementReady, onError }:
       const fd = new FormData()
       fd.append('file', file)
       fd.append('password', password)
-      fd.append('statement_id', statementId)
+      if (statementId) fd.append('statement_id', statementId)
 
       const res = await fetch('/api/statements/upload', { method: 'POST', body: fd })
       const data = await res.json()
@@ -31,7 +32,13 @@ export function PasswordPrompt({ statementId, file, onStatementReady, onError }:
         onError(data.error)
         return
       }
-      onStatementReady(data.statement_id)
+      // Anonymous path: pipeline ran in memory
+      if (data.anonymous) {
+        sessionStorage.setItem('finclarity_pending_upload', JSON.stringify(data))
+        onAnonymousSuccess?.()
+        return
+      }
+      onStatementReady?.(data.statement_id)
     } catch {
       onError('Something went wrong. Please try again.')
     } finally {
