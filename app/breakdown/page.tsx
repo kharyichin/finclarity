@@ -165,7 +165,7 @@ export default function BreakdownPage() {
               <MonthSelector value={month} onChange={setMonth} />
             </div>
 
-            {isAnonymous && (
+            {isAnonymous && transactions.length > 0 && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 This data is only saved in this browser tab.{' '}
                 <button

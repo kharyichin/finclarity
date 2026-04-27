@@ -172,7 +172,7 @@ export default function DashboardPage() {
         <main className="flex-1 overflow-y-auto px-6 py-8">
           <div className="max-w-2xl mx-auto space-y-5">
 
-            {isAnonymous && (
+            {isAnonymous && hasUploads && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 This data is only saved in this browser tab.{' '}
                 <button
