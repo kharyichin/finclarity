@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { NarrativeSummary } from '@/components/dashboard/NarrativeSummary'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { NudgesSection } from '@/components/dashboard/NudgesSection'
@@ -97,7 +98,15 @@ export default function DemoPage() {
 
             <div className="flex items-center justify-between">
               <h1 className="text-lg font-semibold text-stone-800">Your Month</h1>
-              <span className="text-sm text-stone-400">April 2026</span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-stone-400">April 2026</span>
+                <Link
+                  href="/login"
+                  className="text-sm text-stone-500 hover:text-stone-800 underline underline-offset-2 transition"
+                >
+                  Sign in
+                </Link>
+              </div>
             </div>
 
             {/* Narrative with tooltip */}

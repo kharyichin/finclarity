@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
@@ -13,7 +14,22 @@ const navItems = [
 
 export function Sidebar({ onUpload }: { onUpload?: () => void }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
+  const [isAnonymous, setIsAnonymous] = useState(true)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      setIsAnonymous(data.user?.is_anonymous ?? true)
+    })
+  }, [])
+
+  async function handleSignOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/demo')
+  }
 
   return (
     <aside
@@ -51,6 +67,35 @@ export function Sidebar({ onUpload }: { onUpload?: () => void }) {
         })}
       </nav>
 
+      {/* Account section */}
+      <div className="border-t border-stone-100 px-2 py-3 space-y-1">
+        {isAnonymous ? (
+          <>
+            <Link
+              href="/login"
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-800 transition"
+            >
+              <span className="text-base shrink-0">🔑</span>
+              {!collapsed && <span>Sign in</span>}
+            </Link>
+            <button
+              onClick={onUpload}
+              className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-800 transition"
+            >
+              <span className="text-base shrink-0">✨</span>
+              {!collapsed && <span>Create account</span>}
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition"
+          >
+            <span className="text-base shrink-0">↩︎</span>
+            {!collapsed && <span>Sign out</span>}
+          </button>
+        )}
+      </div>
     </aside>
   )
 }
