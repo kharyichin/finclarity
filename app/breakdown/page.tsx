@@ -34,11 +34,13 @@ export default function BreakdownPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [flow, setFlow] = useState<UploadFlow>({ stage: 'idle' })
   const [isAnonymous, setIsAnonymous] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => {
       setIsAnonymous(data.user?.is_anonymous ?? false)
+      setAuthChecked(true)
     })
   }, [])
 
@@ -55,9 +57,57 @@ export default function BreakdownPage() {
     }
   }, [])
 
+  const loadAnonTransactions = useCallback((selectedMonth: string) => {
+    setLoading(true)
+    const pending = sessionStorage.getItem('finclarity_pending_upload')
+    if (!pending) { setTransactions([]); setLoading(false); return }
+    try {
+      const parsed = JSON.parse(pending)
+      if (!parsed.rawTransactions || !parsed.meta || parsed.meta.monthYear !== selectedMonth) {
+        setTransactions([])
+        setLoading(false)
+        return
+      }
+      const meta = parsed.meta
+      const bankDisplay = meta.cardName ? `${meta.bankName} ${meta.cardName}` : meta.bankName
+      const mapped: Transaction[] = parsed.rawTransactions.map((tx: Record<string, unknown>, idx: number) => ({
+        id: `anon-${idx}`,
+        user_id: 'anonymous',
+        statement_id: 'anonymous',
+        date: tx.date as string,
+        merchant: tx.merchant as string,
+        amount: tx.amount as number,
+        currency: (tx.currency as string) || 'SGD',
+        sgd_amount: (tx.bankRateSGD as number) ?? (tx.amount as number),
+        original_amount: (tx.originalAmount as number) ?? (tx.amount as number),
+        bank_rate: (tx.bankRate as number) ?? null,
+        bank_rate_sgd: (tx.bankRateSGD as number) ?? null,
+        estimated_rate_sgd: null,
+        exchange_rate_source: tx.bankRate ? 'bank' : null,
+        claude_category: (tx.category as string) ?? null,
+        user_category: null,
+        type: tx.type as Transaction['type'],
+        transfer_pair_id: (tx.transferPairId as string) ?? null,
+        account_last4: (tx.accountLast4 as string) || meta.accountLast4,
+        bank_name: bankDisplay,
+        month_year: meta.monthYear,
+      }))
+      setTransactions(mapped)
+    } catch {
+      setTransactions([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
-    fetchTransactions(month)
-  }, [month, fetchTransactions])
+    if (!authChecked) return
+    if (isAnonymous) {
+      loadAnonTransactions(month)
+    } else {
+      fetchTransactions(month)
+    }
+  }, [month, fetchTransactions, loadAnonTransactions, isAnonymous, authChecked])
 
   const openUpload = () => {
     setFlow({ stage: 'idle' })
@@ -87,9 +137,15 @@ export default function BreakdownPage() {
     fetchTransactions(month)
   }, [month, fetchTransactions])
 
+  const openAccountCreation = () => {
+    setFlow({ stage: 'success' })
+    setModalOpen(true)
+  }
+
   const onAnonymousSuccess = useCallback(() => {
     setFlow({ stage: 'success' })
-  }, [])
+    loadAnonTransactions(month)
+  }, [month, loadAnonTransactions])
 
   const onNeedsPasswordAnonymous = useCallback((file: File) => {
     setFlow({ stage: 'needs_password_anonymous', file })
@@ -108,6 +164,18 @@ export default function BreakdownPage() {
               <h1 className="text-lg font-semibold text-stone-800">Spending Breakdown</h1>
               <MonthSelector value={month} onChange={setMonth} />
             </div>
+
+            {isAnonymous && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                This data is only saved in this browser tab.{' '}
+                <button
+                  onClick={openAccountCreation}
+                  className="font-medium underline underline-offset-2 hover:text-amber-900"
+                >
+                  Create an account to keep it.
+                </button>
+              </div>
+            )}
 
             <p className="text-xs text-stone-400">
               Conversions are estimates. Your bank may have applied a different rate.

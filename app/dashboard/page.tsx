@@ -120,6 +120,12 @@ export default function DashboardPage() {
     setModalOpen(true)
   }
 
+  const openAccountCreation = () => {
+    setShowCheckIn(false)
+    setFlow({ stage: 'success' })
+    setModalOpen(true)
+  }
+
   const closeModal = () => {
     setModalOpen(false)
     setFlow({ stage: 'idle' })
@@ -170,7 +176,7 @@ export default function DashboardPage() {
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 This data is only saved in this browser tab.{' '}
                 <button
-                  onClick={openUpload}
+                  onClick={openAccountCreation}
                   className="font-medium underline underline-offset-2 hover:text-amber-900"
                 >
                   Create an account to keep it.
