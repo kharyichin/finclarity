@@ -237,6 +237,9 @@ async function runAnonymousPipeline(fileBytes: Buffer, password?: string): Promi
       return { error: "No transactions found. Make sure you're uploading a bank or credit card statement PDF." }
     }
 
+    const distinctAccounts = [...new Set(transactions.map((t) => t.accountLast4).filter(Boolean))]
+    const isConsolidated = distinctAccounts.length > 1
+
     const expenses = transactions.filter((t) => t.type === 'expense')
     const trueIncome = transactions.filter(
       (t) => t.type === 'income' && t.category !== 'Refund & Reversal'
@@ -270,6 +273,16 @@ async function runAnonymousPipeline(fileBytes: Buffer, password?: string): Promi
         prompt_version: '1.0',
       },
       creditCardOnly: extracted.statementType === 'credit_card',
+      rawTransactions: transactions,
+      meta: {
+        bankName: extracted.bankName,
+        cardName: extracted.cardName,
+        accountLast4: extracted.accountLast4,
+        statementType: extracted.statementType,
+        dateRange: extracted.dateRange,
+        monthYear,
+        isConsolidated,
+      },
     }
   } catch (err) {
     console.error('[anonymous pipeline]', err)

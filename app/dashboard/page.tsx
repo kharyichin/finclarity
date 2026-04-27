@@ -288,7 +288,7 @@ export default function DashboardPage() {
             {flow.stage === 'success' && (
               showCheckIn
                 ? <CheckInAnimation onDone={() => { setShowCheckIn(false); closeModal() }} />
-                : <SuccessState onDone={closeModal} />
+                : <SuccessState onDone={closeModal} isAnonymous={isAnonymous} />
             )}
 
             {flow.stage === 'duplicate' && (

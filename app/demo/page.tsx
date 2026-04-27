@@ -179,7 +179,7 @@ export default function DemoPage() {
             )}
 
             {flow.stage === 'success' && (
-              <SuccessState onDone={() => router.push('/dashboard')} />
+              <SuccessState onDone={() => router.push('/dashboard')} isAnonymous={true} />
             )}
 
             {flow.stage === 'error' && (
