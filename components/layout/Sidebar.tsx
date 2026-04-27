@@ -20,9 +20,18 @@ export function Sidebar({ onUpload }: { onUpload?: () => void }) {
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
-      setIsAnonymous(data.user?.is_anonymous ?? true)
+
+    // Read session from local cache immediately (no network round-trip)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAnonymous(session?.user?.is_anonymous ?? true)
     })
+
+    // React to sign-in / sign-out events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAnonymous(session?.user?.is_anonymous ?? true)
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   async function handleSignOut() {
