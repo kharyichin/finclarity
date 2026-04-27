@@ -240,8 +240,47 @@
 - **Issue flagged by learner:** No login module for users who have already created an account — they can upload and sign up but can't log back in. Flagged for /iterate.
 - **Comprehension check:** Asked what happens to anonymous user data if they skip "save your progress" and close the browser. Answered "Data is lost" — corrected: data persists in Supabase under the anonymous user ID via session cookie; "save your progress" is a conversion nudge, not a genuine data-loss warning.
 
+### Step 11: Submit to Devpost
+- **What was built:** Devpost submission for FinClarity. Project description drafted from docs/scope.md and docs/prd.md — covers problem, what was built, and what was learned. Built-with tags: Next.js, TypeScript, Tailwind CSS, Supabase, Claude API, Vercel, Resend. Screenshots guidance provided for 5 key screens: demo dashboard, upload flow, real dashboard, breakdown tabs, streak counter. GitHub and Vercel URLs linked.
+- **Comprehension check:** Asked why the password-discard detail was called out in the description. Answered correctly: it's a key trust signal — a differentiating privacy guarantee for users uploading sensitive financial documents.
+- **Active engagement:** Submission completed independently without friction.
+
 ### Step 1: Database schema
 - **What was built:** `supabase/schema.sql` with all 6 tables (`users`, `statements`, `transactions`, `monthly_reports`, `check_ins`, `exchange_rates`). Includes foreign keys, cascade deletes, unique constraints, and a trigger to auto-create a `public.users` row when Supabase creates any auth user.
 - **Schema correction mid-step:** Initial draft was missing the `auth.users` linkage (needed for anonymous auth to work) and the period duplicate constraint on `statements`. Both were caught before verification and fixed.
 - **Verification:** Jade confirmed all 6 tables appeared in Supabase Table Editor. RLS left off intentionally — acceptable for hackathon.
 - **Issues:** Jade initially pasted the file path into the SQL editor instead of the file contents — resolved with guidance. No SQL errors on run.
+
+### Step 12: Anonymous upload — process in memory, never save to DB
+- **What was built:** `app/api/statements/upload/route.ts` — added anonymous branch: detects `user.is_anonymous`, runs new `runAnonymousPipeline()` function (same steps as authenticated pipeline — PDF parse, Claude extract, transfer detection, narrative) but returns all data inline in the API response instead of inserting any DB rows. `components/upload/UploadZone.tsx` — handles `{ anonymous: true }` response: stores full result in `sessionStorage` under `finclarity_pending_upload`, calls `onAnonymousSuccess()`. `components/upload/PasswordPrompt.tsx` — made `statementId` optional, handles anonymous password retry and anonymous response. `app/dashboard/page.tsx` — auth check on mount (Supabase `getUser()`), `loadAnonymousData()` reads from sessionStorage if anonymous, `needs_password_anonymous` flow stage added, amber banner for anonymous users ("This data is only saved in this browser tab. Create an account to keep it.").
+- **Issues encountered:** None — clean build first try, TypeScript passed with zero errors.
+- **Design decision:** Anonymous users see the "Uploading..." spinner for the full pipeline duration (30-60s), whereas authenticated users get the animated `ProcessingState` cycling through messages. This is a minor UX difference; the spec didn't specify an animated state for anonymous uploads and adding it would require significant plumbing. Acceptable for this step.
+
+### Step 13: Account creation — save sessionStorage data to DB
+- **What was built:** `app/api/statements/save/route.ts` — POST route that accepts the full anonymous upload payload (report + rawTransactions + meta) and saves to `statements`, `transactions`, `monthly_reports`, and `check_ins`. `app/api/statements/upload/route.ts` — anonymous pipeline now includes `rawTransactions` and `meta` (bankName, cardName, accountLast4, statementType, dateRange, monthYear, isConsolidated) in its response so the save route has everything needed to reconstruct DB rows. `components/upload/SuccessState.tsx` — now has two rendering modes: authenticated users see the original "View your dashboard" flow; anonymous users see an amber "Save your progress" banner + email/password form + "Continue without saving" option. On save: calls `supabase.auth.updateUser({ email, password })` to convert the anonymous session, then POSTs sessionStorage data to `/api/statements/save`, clears sessionStorage, navigates to `/dashboard` via full page reload. `app/dashboard/page.tsx` and `app/demo/page.tsx` — both now pass `isAnonymous` to `SuccessState`.
+- **Issues encountered:** None — TypeScript passed clean.
+
+## /iterate
+
+**Session start:** All 11 original checklist items confirmed complete. App live at `https://my-hackathon-project-mu.vercel.app`.
+
+**Items flagged during the build for /iterate:**
+- Narrative quality (OCBC merchant code formatting causing "Other" to dominate category data)
+- Summary card figures inaccurate (related to same extraction quality issue)
+- No login module for returning users — users who've created an account can't log back in
+
+**Quick review pass observations (pre-learner input):**
+- Login gap is a real usability hole — any user who created an account and returns to the live URL has no path back to their data
+- Narrative/extraction quality is the core "wow moment" of the app — if it's weak, the submission suffers
+- Both issues are solvable, and the infrastructure for both is already there (Supabase auth is wired, Claude extraction prompt is already structured)
+
+**Scoping decisions:**
+- Data persistence: chose Option B (never save anonymous user data to DB; process in memory, save only on account creation). Reason: stronger privacy story, aligns "save your progress" with reality. Jade was deliberate about this after understanding the tradeoff.
+- Brokerage/crypto: brokerage is v2 (already in PRD), crypto is a Non-Goal (confirmed). Not in this iteration.
+- Resend, dashboard UX, OCBC extraction deferred — prioritised data + login first.
+- PRD updated with full Iteration Backlog section consolidating all v2 and build-flagged items.
+
+**Iteration 1 checklist items created:** 3
+- Item 12: Anonymous upload returns data in memory, never saves to DB
+- Item 13: Account creation converts anonymous session + saves sessionStorage data to DB
+- Item 14: Login page for returning users + sign-in link on demo/sidebar
