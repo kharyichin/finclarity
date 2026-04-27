@@ -27,16 +27,16 @@ export async function parsePDF(
   // Dynamic import avoids module-level crash in Vercel serverless environment
   const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist/legacy/build/pdf.mjs')
 
-  // Resolve the worker file path so pdfjs can load it in fake-worker (main-thread) mode
-  try {
-    const { createRequire } = await import('module')
-    const { pathToFileURL } = await import('url')
-    const req = createRequire(import.meta.url)
-    const workerPath = req.resolve('pdfjs-dist/legacy/build/pdf.worker.min.mjs')
-    GlobalWorkerOptions.workerSrc = pathToFileURL(workerPath).href
-  } catch {
-    GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.min.mjs'
+  // pdfjs checks globalThis.pdfjsWorker?.WorkerMessageHandler before attempting a dynamic
+  // import of workerSrc. Populating it with a static-string import lets Turbopack resolve
+  // the worker module at bundle time, avoiding the [project] virtual-path failure at runtime.
+  const g = globalThis as Record<string, unknown>
+  if (!g.pdfjsWorker) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    g.pdfjsWorker = await import('pdfjs-dist/legacy/build/pdf.worker.min.mjs' as any)
   }
+  // workerSrc must still be a non-empty string or pdfjs throws before reaching the handler check
+  GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.min.mjs'
 
   try {
     const loadingTask = getDocument({
