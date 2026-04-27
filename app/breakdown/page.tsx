@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
 import { MonthSelector } from '@/components/ui/MonthSelector'
@@ -16,6 +17,7 @@ type UploadFlow =
   | { stage: 'idle' }
   | { stage: 'processing'; statementId: string; file: File }
   | { stage: 'needs_password'; statementId: string; file: File }
+  | { stage: 'needs_password_anonymous'; file: File }
   | { stage: 'success' }
   | { stage: 'duplicate' }
   | { stage: 'error'; message: string }
@@ -31,6 +33,14 @@ export default function BreakdownPage() {
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [flow, setFlow] = useState<UploadFlow>({ stage: 'idle' })
+  const [isAnonymous, setIsAnonymous] = useState(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      setIsAnonymous(data.user?.is_anonymous ?? false)
+    })
+  }, [])
 
   const fetchTransactions = useCallback(async (m: string) => {
     setLoading(true)
@@ -76,6 +86,14 @@ export default function BreakdownPage() {
     setFlow({ stage: 'success' })
     fetchTransactions(month)
   }, [month, fetchTransactions])
+
+  const onAnonymousSuccess = useCallback(() => {
+    setFlow({ stage: 'success' })
+  }, [])
+
+  const onNeedsPasswordAnonymous = useCallback((file: File) => {
+    setFlow({ stage: 'needs_password_anonymous', file })
+  }, [])
 
   return (
     <div className="flex h-screen bg-stone-50">
@@ -133,7 +151,7 @@ export default function BreakdownPage() {
               <h3 className="font-semibold text-stone-800">
                 {flow.stage === 'idle' && 'Upload a statement'}
                 {flow.stage === 'processing' && 'Processing'}
-                {flow.stage === 'needs_password' && 'Password required'}
+                {(flow.stage === 'needs_password' || flow.stage === 'needs_password_anonymous') && 'Password required'}
                 {flow.stage === 'success' && 'Done!'}
                 {flow.stage === 'duplicate' && 'Already uploaded'}
                 {flow.stage === 'error' && 'Something went wrong'}
@@ -148,6 +166,8 @@ export default function BreakdownPage() {
                 onStatementCreated={onStatementCreated}
                 onDuplicate={() => setFlow({ stage: 'duplicate' })}
                 onError={(msg) => setFlow({ stage: 'error', message: msg })}
+                onAnonymousSuccess={onAnonymousSuccess}
+                onNeedsPasswordAnonymous={onNeedsPasswordAnonymous}
               />
             )}
             {flow.stage === 'processing' && (
@@ -172,7 +192,14 @@ export default function BreakdownPage() {
                 onError={(msg) => setFlow({ stage: 'error', message: msg })}
               />
             )}
-            {flow.stage === 'success' && <SuccessState onDone={closeModal} />}
+            {flow.stage === 'needs_password_anonymous' && (
+              <PasswordPrompt
+                file={flow.file}
+                onAnonymousSuccess={onAnonymousSuccess}
+                onError={(msg) => setFlow({ stage: 'error', message: msg })}
+              />
+            )}
+            {flow.stage === 'success' && <SuccessState onDone={closeModal} isAnonymous={isAnonymous} />}
             {flow.stage === 'duplicate' && (
               <div className="text-center py-4">
                 <p className="text-3xl mb-3">📋</p>

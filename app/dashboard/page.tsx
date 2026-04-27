@@ -55,6 +55,11 @@ export default function DashboardPage() {
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
 
+  // For anonymous users, only show the report when the selected month matches the upload's month
+  const displayReport = isAnonymous
+    ? (report?.month_year === month ? report : null)
+    : report
+
   function loadAnonymousData() {
     const pending = sessionStorage.getItem('finclarity_pending_upload')
     if (pending) {
@@ -190,23 +195,23 @@ export default function DashboardPage() {
             ) : (
               <>
                 <NarrativeSummary
-                  narrative={report?.narrative_text ?? null}
+                  narrative={displayReport?.narrative_text ?? null}
                   hasUploads={hasUploads}
                   onUpload={openUpload}
                 />
 
                 <SummaryCards
-                  data={report?.summary_cards_json ?? null}
+                  data={displayReport?.summary_cards_json ?? null}
                   hasComparison={hasMultipleMonths}
                   creditCardOnly={creditCardOnly}
                 />
 
                 <ObservationsPanel
-                  observations={report?.observations_json ?? null}
+                  observations={displayReport?.observations_json ?? null}
                   hasMultipleMonths={hasMultipleMonths}
                 />
 
-                <NudgesSection nudges={report?.nudges_json ?? null} />
+                <NudgesSection nudges={displayReport?.nudges_json ?? null} />
               </>
             )}
           </div>
