@@ -8,6 +8,7 @@ import { ProcessingState } from '@/components/upload/ProcessingState'
 import { SuccessState } from '@/components/upload/SuccessState'
 import { ErrorState } from '@/components/upload/ErrorState'
 import { NarrativeSummary } from '@/components/dashboard/NarrativeSummary'
+import { SpendSaveStrip } from '@/components/dashboard/SpendSaveStrip'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { ObservationsPanel } from '@/components/dashboard/ObservationsPanel'
 import { NudgesSection } from '@/components/dashboard/NudgesSection'
@@ -205,6 +206,8 @@ export default function DashboardPage() {
                   hasUploads={hasUploads}
                   onUpload={openUpload}
                 />
+
+                <SpendSaveStrip data={displayReport?.summary_cards_json ?? null} />
 
                 <SummaryCards
                   data={displayReport?.summary_cards_json ?? null}

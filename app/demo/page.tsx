@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { NarrativeSummary } from '@/components/dashboard/NarrativeSummary'
+import { SpendSaveStrip } from '@/components/dashboard/SpendSaveStrip'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { NudgesSection } from '@/components/dashboard/NudgesSection'
 import { Sidebar } from '@/components/layout/Sidebar'
@@ -117,6 +118,8 @@ export default function DemoPage() {
                 onUpload={openUpload}
               />
             </Tooltip>
+
+            <SpendSaveStrip data={DEMO_CARDS} />
 
             {/* Summary cards with tooltip */}
             <Tooltip step={2} message="Four cards that tell you the most important numbers at a glance — what you spent, what you saved, your biggest category, and one thing to watch.">
