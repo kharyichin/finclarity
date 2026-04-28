@@ -12,6 +12,7 @@ import { SpendSaveStrip } from '@/components/dashboard/SpendSaveStrip'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { ObservationsPanel } from '@/components/dashboard/ObservationsPanel'
 import { NudgesSection } from '@/components/dashboard/NudgesSection'
+import { InsightTiles } from '@/components/dashboard/InsightTiles'
 import { MonthSelector } from '@/components/ui/MonthSelector'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
@@ -214,6 +215,8 @@ export default function DashboardPage() {
                   hasComparison={hasMultipleMonths}
                   creditCardOnly={creditCardOnly}
                 />
+
+                <InsightTiles month={month} isAnonymous={isAnonymous} />
 
                 <ObservationsPanel
                   observations={displayReport?.observations_json ?? null}
