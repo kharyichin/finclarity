@@ -256,6 +256,26 @@
 - **Issues encountered:** None — clean build first try, TypeScript passed with zero errors.
 - **Design decision:** Anonymous users see the "Uploading..." spinner for the full pipeline duration (30-60s), whereas authenticated users get the animated `ProcessingState` cycling through messages. This is a minor UX difference; the spec didn't specify an animated state for anonymous uploads and adding it would require significant plumbing. Acceptable for this step.
 
+## /iterate
+
+**Session start:** All 14 checklist items complete. Iteration 1 (steps 12–14) also complete. Full end-to-end flow verified: demo → anonymous upload → save progress → sign out → sign back in → data persists.
+
+**Iteration 2 scope:**
+- User chose Dashboard & UX improvements
+- Animated stat strip (spend vs save, savings rate %)
+- Conditional insight tiles (top spending card — only shows with 2+ accounts)
+- Monthly budget tracker (set once, track against spend each month)
+- Wider upload modal
+- Savings goals deferred to Phase 2 alongside account management
+- 4 checklist items added (15–18)
+
+**Remaining PRD backlog items:**
+- OCBC merchant extraction quality / narrative quality (flagged at steps 5, 6, 8)
+- Dashboard visual accompaniment (text-only narrative section)
+- Upload modal size polish
+- Resend domain verification for email reminders
+- Larger features (merchant drill-down, wrapped export, streak badges) — Phase 2
+
 ### Step 14: Login page for returning users
 - **What was built:** `app/login/page.tsx` — warm sign-in form with email + password, calls `supabase.auth.signInWithPassword()`, redirects to `/dashboard` on success, shows friendly inline error on failure. `app/demo/page.tsx` — "Sign in" link added to the heading row (top-right of main content area, next to the April 2026 label). `components/layout/Sidebar.tsx` — now checks auth state on mount; anonymous users see "Sign in" (→ /login) and "Create account" (calls onUpload) at the bottom; authenticated users see a "Sign out" button that calls `auth.signOut()` and redirects to `/demo`.
 - **Issues encountered:** None — clean build.
