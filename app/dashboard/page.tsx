@@ -13,6 +13,8 @@ import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { ObservationsPanel } from '@/components/dashboard/ObservationsPanel'
 import { NudgesSection } from '@/components/dashboard/NudgesSection'
 import { InsightTiles } from '@/components/dashboard/InsightTiles'
+import { BudgetBar } from '@/components/dashboard/BudgetBar'
+import { SaveProgressForm } from '@/components/upload/SaveProgressForm'
 import { MonthSelector } from '@/components/ui/MonthSelector'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
@@ -25,6 +27,7 @@ type UploadFlow =
   | { stage: 'needs_password'; statementId: string; file: File }
   | { stage: 'needs_password_anonymous'; file: File }
   | { stage: 'success' }
+  | { stage: 'save_progress' }
   | { stage: 'duplicate' }
   | { stage: 'error'; message: string }
 
@@ -56,6 +59,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
+  const [monthlyBudget, setMonthlyBudget] = useState<number | null>(null)
 
   // For anonymous users, only show the report when the selected month matches the upload's month
   const displayReport = isAnonymous
@@ -107,7 +111,14 @@ export default function DashboardPage() {
       const anon = data.user?.is_anonymous ?? false
       setIsAnonymous(anon)
       setAuthChecked(true)
-      if (anon) loadAnonymousData()
+      if (anon) {
+        loadAnonymousData()
+      } else {
+        fetch('/api/user')
+          .then((r) => (r.ok ? r.json() : null))
+          .then((u) => { if (u?.monthly_budget != null) setMonthlyBudget(u.monthly_budget) })
+          .catch(() => {})
+      }
     })
   }, [])
 
@@ -124,7 +135,7 @@ export default function DashboardPage() {
 
   const openAccountCreation = () => {
     setShowCheckIn(false)
-    setFlow({ stage: 'success' })
+    setFlow({ stage: 'save_progress' })
     setModalOpen(true)
   }
 
@@ -218,6 +229,14 @@ export default function DashboardPage() {
 
                 <InsightTiles month={month} isAnonymous={isAnonymous} />
 
+                {!isAnonymous && (
+                  <BudgetBar
+                    spent={displayReport?.summary_cards_json?.spent ?? null}
+                    budget={monthlyBudget}
+                    onBudgetChange={setMonthlyBudget}
+                  />
+                )}
+
                 <ObservationsPanel
                   observations={displayReport?.observations_json ?? null}
                   hasMultipleMonths={hasMultipleMonths}
@@ -246,6 +265,7 @@ export default function DashboardPage() {
                 {flow.stage === 'processing' && 'Processing'}
                 {(flow.stage === 'needs_password' || flow.stage === 'needs_password_anonymous') && 'Password required'}
                 {flow.stage === 'success' && 'Done!'}
+                {flow.stage === 'save_progress' && 'Save your progress'}
                 {flow.stage === 'duplicate' && 'Already uploaded'}
                 {flow.stage === 'error' && 'Something went wrong'}
               </h3>
@@ -306,6 +326,10 @@ export default function DashboardPage() {
               showCheckIn
                 ? <CheckInAnimation onDone={() => { setShowCheckIn(false); closeModal() }} />
                 : <SuccessState onDone={closeModal} isAnonymous={isAnonymous} />
+            )}
+
+            {flow.stage === 'save_progress' && (
+              <SaveProgressForm onDone={closeModal} />
             )}
 
             {flow.stage === 'duplicate' && (
