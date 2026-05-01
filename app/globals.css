@@ -66,6 +66,10 @@
 .dark .hover\:text-stone-800:hover { color: #fafaf9 !important; }
 .dark .hover\:text-stone-600:hover { color: #d6d3d1 !important; }
 
+/* Summary card tints */
+.dark .bg-yellow-50  { background-color: transparent !important; border-color: #fde047 !important; }
+.dark .bg-amber-100  { background-color: transparent !important; border-color: #fbbf24 !important; }
+
 /* Category / account tinted boxes — strip fill, show coloured border in dark mode */
 .dark .bg-emerald-50 { background-color: transparent !important; border-color: #6ee7b7 !important; }
 .dark .bg-sky-50     { background-color: transparent !important; border-color: #7dd3fc !important; }

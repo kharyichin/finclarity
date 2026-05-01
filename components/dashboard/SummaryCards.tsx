@@ -79,7 +79,7 @@ export function SummaryCards({ data, hasComparison, creditCardOnly }: SummaryCar
 
   return (
     <div className="grid grid-cols-2 gap-3">
-      <NumberCard icon="💸" label="Total spent" value={fmt(data.spent)} accent="bg-rose-50" />
+      <NumberCard icon="💸" label="Total spent" value={fmt(data.spent)} accent="bg-orange-50" />
 
       {creditCardOnly ? (
         <div className="rounded-2xl border border-dashed border-stone-200 bg-white p-5 flex flex-col gap-2">
@@ -95,12 +95,12 @@ export function SummaryCards({ data, hasComparison, creditCardOnly }: SummaryCar
           label="Total saved"
           value={fmt(data.saved)}
           sub={!hasComparison ? 'Upload a past month to compare' : undefined}
-          accent="bg-green-50"
+          accent="bg-amber-50"
           iconClassName="animate-sway"
         />
       )}
 
-      <div className="rounded-2xl border border-stone-100 bg-sky-50 p-5 flex flex-col gap-2">
+      <div className="rounded-2xl border border-stone-100 bg-yellow-50 p-5 flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <span className="text-base">🏷️</span>
           <p className="text-xs text-stone-500 font-medium">Biggest category</p>
@@ -110,7 +110,7 @@ export function SummaryCards({ data, hasComparison, creditCardOnly }: SummaryCar
           <p className="text-xl font-bold text-stone-800 leading-tight">{data.top_category}</p>
         </div>
       </div>
-      <TextCard icon="👀" label="Watch out" value={data.watchout} accent="bg-amber-50" />
+      <TextCard icon="👀" label="Watch out" value={data.watchout} accent="bg-amber-100" />
     </div>
   )
 }
