@@ -234,6 +234,25 @@ export default function DashboardPage() {
                   hasUploads={hasUploads}
                   onUpload={openUpload}
                   topCategory={displayReport?.summary_cards_json?.top_category ?? null}
+                  spent={displayReport?.summary_cards_json?.spent ?? null}
+                  budgetTotal={
+                    !isAnonymous
+                      ? (() => {
+                          const catSum = categoryBudgets
+                            ? Object.values(categoryBudgets).filter((v) => v > 0).reduce((s, v) => s + v, 0)
+                            : 0
+                          return catSum > 0 ? catSum : (monthlyBudget ?? null)
+                        })()
+                      : null
+                  }
+                />
+
+                <SpendSaveStrip data={displayReport?.summary_cards_json ?? null} />
+
+                <SummaryCards
+                  data={displayReport?.summary_cards_json ?? null}
+                  hasComparison={hasMultipleMonths}
+                  creditCardOnly={creditCardOnly}
                 />
 
                 {!isAnonymous && (
@@ -247,14 +266,6 @@ export default function DashboardPage() {
                 {!isAnonymous && categoryBudgets && Object.keys(categoryBudgets).length > 0 && (
                   <BudgetCallouts month={month} categoryBudgets={categoryBudgets} />
                 )}
-
-                <SpendSaveStrip data={displayReport?.summary_cards_json ?? null} />
-
-                <SummaryCards
-                  data={displayReport?.summary_cards_json ?? null}
-                  hasComparison={hasMultipleMonths}
-                  creditCardOnly={creditCardOnly}
-                />
 
                 <InsightTiles month={month} isAnonymous={isAnonymous} />
 
