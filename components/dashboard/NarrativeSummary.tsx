@@ -1,5 +1,3 @@
-import { getCategoryIcon } from '@/lib/utils/categories'
-
 interface NarrativeSummaryProps {
   narrative: string | null
   hasUploads: boolean
@@ -9,7 +7,7 @@ interface NarrativeSummaryProps {
   budgetTotal?: number | null
 }
 
-export function NarrativeSummary({ narrative, hasUploads, onUpload, topCategory, spent, budgetTotal }: NarrativeSummaryProps) {
+export function NarrativeSummary({ narrative, hasUploads, onUpload, spent, budgetTotal }: NarrativeSummaryProps) {
   if (!hasUploads || !narrative) {
     return (
       <div className="rounded-2xl bg-gradient-to-br from-green-50 to-stone-50 border border-green-100 p-6 flex flex-col gap-4">
@@ -27,47 +25,35 @@ export function NarrativeSummary({ narrative, hasUploads, onUpload, topCategory,
     )
   }
 
-  const icon = topCategory ? getCategoryIcon(topCategory) : '🌿'
-
   const hasBudget = budgetTotal != null && budgetTotal > 0 && spent != null
   const pct = hasBudget ? Math.round((spent! / budgetTotal!) * 100) : null
   const over = hasBudget && spent! > budgetTotal!
   const fmt = (n: number) =>
     'SGD ' + Math.abs(n).toLocaleString('en-SG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
-  let budgetLine: string | null = null
-  let budgetColor = 'text-green-600'
+  let budgetNote: string | null = null
+  let noteColor = 'text-green-600'
   if (hasBudget) {
     if (over) {
-      budgetLine = `${fmt(spent! - budgetTotal!)} over your monthly budget`
-      budgetColor = 'text-red-500'
+      budgetNote = `${fmt(spent! - budgetTotal!)} over your monthly budget`
+      noteColor = 'text-red-500'
     } else if (pct! >= 80) {
-      budgetLine = `${pct}% of your monthly budget used — getting close`
-      budgetColor = 'text-amber-600'
+      budgetNote = `${pct}% of budget used — getting close`
+      noteColor = 'text-amber-600'
     } else {
-      budgetLine = `${pct}% of your monthly budget used — on track`
-      budgetColor = 'text-green-600'
+      budgetNote = `${pct}% of budget used — on track`
+      noteColor = 'text-green-600'
     }
   }
 
   return (
     <div className="rounded-2xl bg-gradient-to-br from-green-50 to-stone-50 border border-green-100 p-6">
-      <div className="flex items-start gap-4">
-        <div className="shrink-0 flex flex-col items-center gap-1 mt-0.5">
-          <span className="text-2xl">{icon}</span>
-          {topCategory && (
-            <span className="text-[10px] font-medium text-stone-400 text-center leading-tight max-w-[48px] truncate">
-              {topCategory}
-            </span>
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-stone-700 leading-relaxed text-[15px]">{narrative}</p>
-          {budgetLine && (
-            <p className={`mt-2.5 text-xs font-medium ${budgetColor}`}>{budgetLine}</p>
-          )}
-        </div>
-      </div>
+      <p className="text-stone-700 leading-relaxed text-[15px]">{narrative}</p>
+      {budgetNote && (
+        <p className={`mt-3 pt-3 border-t border-green-100 text-xs ${noteColor}`}>
+          {budgetNote}
+        </p>
+      )}
     </div>
   )
 }

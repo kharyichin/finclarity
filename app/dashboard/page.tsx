@@ -233,7 +233,6 @@ export default function DashboardPage() {
                   narrative={displayReport?.narrative_text ?? null}
                   hasUploads={hasUploads}
                   onUpload={openUpload}
-                  topCategory={displayReport?.summary_cards_json?.top_category ?? null}
                   spent={displayReport?.summary_cards_json?.spent ?? null}
                   budgetTotal={
                     !isAnonymous

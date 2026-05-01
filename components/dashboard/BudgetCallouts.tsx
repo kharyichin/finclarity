@@ -59,19 +59,21 @@ export function BudgetCallouts({ month, categoryBudgets }: Props) {
     'SGD ' + n.toLocaleString('en-SG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
   return (
-    <div className="rounded-2xl bg-white border border-stone-100 px-5 py-3.5 space-y-2">
-      <p className="text-xs font-medium text-stone-400 uppercase tracking-wide">Budget notes</p>
+    <div className="flex flex-wrap gap-2">
       {callouts.map(({ category, type, amount }) => (
-        <div key={category} className="flex items-center gap-2.5">
-          <span
-            className={`shrink-0 w-1.5 h-1.5 rounded-full ${type === 'over' ? 'bg-red-400' : 'bg-emerald-400'}`}
-          />
-          <span className="text-base shrink-0">{getCategoryIcon(category)}</span>
-          <span className="text-sm text-stone-600 flex-1 min-w-0 truncate">{category}</span>
-          <span className={`text-xs shrink-0 ${type === 'over' ? 'text-red-500' : 'text-emerald-600'}`}>
-            {type === 'over' ? `${fmt(amount)} over` : `${fmt(amount)} left`}
-          </span>
-        </div>
+        <span
+          key={category}
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
+            type === 'over'
+              ? 'bg-red-50 text-red-600 border border-red-100'
+              : 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+          }`}
+        >
+          <span>{getCategoryIcon(category)}</span>
+          <span>{category}</span>
+          <span className="opacity-60">·</span>
+          <span>{type === 'over' ? `${fmt(amount)} over` : `${fmt(amount)} left`}</span>
+        </span>
       ))}
     </div>
   )
