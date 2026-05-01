@@ -10,7 +10,7 @@ interface NarrativeSummaryProps {
 export function NarrativeSummary({ narrative, hasUploads, onUpload, spent, budgetTotal }: NarrativeSummaryProps) {
   if (!hasUploads || !narrative) {
     return (
-      <div className="rounded-2xl bg-gradient-to-br from-green-50 to-stone-50 border border-green-100 p-6 flex flex-col gap-4">
+      <div className="rounded-2xl bg-stone-100 border border-stone-200 p-6 flex flex-col gap-4">
         <span className="text-3xl">🌿</span>
         <p className="text-stone-600 text-sm leading-relaxed">
           Upload your first bank statement to get a clear, narrative picture of where your money went this month.
@@ -47,10 +47,10 @@ export function NarrativeSummary({ narrative, hasUploads, onUpload, spent, budge
   }
 
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-green-50 to-stone-50 border border-green-100 p-6">
+    <div className="rounded-2xl bg-stone-100 border border-stone-200 p-6">
       <p className="text-stone-700 leading-relaxed text-[15px]">{narrative}</p>
       {budgetNote && (
-        <p className={`mt-3 pt-3 border-t border-green-100 text-xs ${noteColor}`}>
+        <p className={`mt-3 pt-3 border-t border-stone-200 text-xs ${noteColor}`}>
           {budgetNote}
         </p>
       )}
