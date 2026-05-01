@@ -245,7 +245,15 @@ export default function DashboardPage() {
                   }
                 />
 
-                <SpendSaveStrip data={displayReport?.summary_cards_json ?? null} />
+                <SpendSaveStrip
+                  data={displayReport?.summary_cards_json ?? null}
+                  budget={!isAnonymous ? (() => {
+                    const catSum = categoryBudgets
+                      ? Object.values(categoryBudgets).filter((v) => v > 0).reduce((s, v) => s + v, 0)
+                      : 0
+                    return catSum > 0 ? catSum : (monthlyBudget ?? null)
+                  })() : null}
+                />
 
                 <SummaryCards
                   data={displayReport?.summary_cards_json ?? null}

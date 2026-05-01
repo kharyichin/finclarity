@@ -44,7 +44,7 @@ export function SummaryCards({ data, hasComparison, creditCardOnly }: SummaryCar
       {creditCardOnly ? (
         <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: '#4A8078' }}>
           <div className="flex items-center gap-2">
-            <span className="text-base">✨</span>
+            <span className="text-base animate-twinkle">✨</span>
             <p className="text-xs font-medium text-white/80">Total saved</p>
           </div>
           <p className="text-sm text-white/70 leading-snug">Add your bank statement to see savings</p>
@@ -52,7 +52,7 @@ export function SummaryCards({ data, hasComparison, creditCardOnly }: SummaryCar
       ) : (
         <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: '#4A8078' }}>
           <div className="flex items-center gap-2">
-            <span className="text-base">✨</span>
+            <span className="text-base animate-twinkle">✨</span>
             <p className="text-xs font-medium text-white/80">Total saved</p>
           </div>
           <p className="text-2xl font-semibold text-white tracking-tight">{fmt(data.saved)}</p>

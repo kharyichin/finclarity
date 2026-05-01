@@ -5,15 +5,20 @@ import type { SummaryCards } from '@/types'
 
 interface SpendSaveStripProps {
   data: SummaryCards | null
+  budget?: number | null
 }
 
-export function SpendSaveStrip({ data }: SpendSaveStripProps) {
+export function SpendSaveStrip({ data, budget }: SpendSaveStripProps) {
   const [animated, setAnimated] = useState(false)
 
   useEffect(() => {
     if (!data) return
-    const id = requestAnimationFrame(() => setAnimated(true))
-    return () => cancelAnimationFrame(id)
+    setAnimated(false)
+    let id1: number, id2: number
+    id1 = requestAnimationFrame(() => {
+      id2 = requestAnimationFrame(() => setAnimated(true))
+    })
+    return () => { cancelAnimationFrame(id1); cancelAnimationFrame(id2) }
   }, [data])
 
   if (!data) return null
@@ -24,6 +29,11 @@ export function SpendSaveStrip({ data }: SpendSaveStripProps) {
   const savedPct = total > 0 ? (Math.max(saved, 0) / total) * 100 : 0
   const savingsRate = total > 0 ? Math.round((Math.max(saved, 0) / total) * 100) : 0
   const creditCardOnly = saved <= 0
+
+  // Budget marker position as % of total bar width
+  const budgetPct = budget != null && budget > 0 && total > 0
+    ? Math.min((budget / total) * 100, 100)
+    : null
 
   const fmt = (n: number) =>
     'SGD ' + Math.abs(n).toLocaleString('en-SG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
@@ -40,24 +50,44 @@ export function SpendSaveStrip({ data }: SpendSaveStripProps) {
         )}
       </div>
 
-      {/* Animated bar */}
-      <div className="h-3 rounded-full bg-stone-100 overflow-hidden flex">
-        <div
-          className="h-full bg-amber-400 rounded-l-full transition-all duration-1000 ease-out"
-          style={{ width: animated ? `${spentPct}%` : '0%' }}
-        />
-        {!creditCardOnly && (
+      {/* Bar with optional budget marker */}
+      <div className="relative h-3">
+        {/* Track + animated fill bars */}
+        <div className="absolute inset-0 rounded-full bg-stone-100 overflow-hidden flex">
           <div
-            className="h-full bg-green-500 transition-all duration-1000 ease-out"
-            style={{ width: animated ? `${savedPct}%` : '0%' }}
+            className="h-full bg-amber-400 transition-all duration-1000 ease-out"
+            style={{ width: animated ? `${spentPct}%` : '0%' }}
           />
+          {!creditCardOnly && (
+            <div
+              className="h-full bg-green-500 transition-all duration-1000 ease-out"
+              style={{ width: animated ? `${savedPct}%` : '0%' }}
+            />
+          )}
+        </div>
+
+        {/* Budget marker line */}
+        {budgetPct != null && (
+          <div
+            className="absolute top-0 h-full z-10 flex flex-col items-center"
+            style={{ left: `${budgetPct}%`, transform: 'translateX(-50%)' }}
+          >
+            <div className="w-[2px] h-full rounded-full bg-stone-700/60" />
+          </div>
         )}
       </div>
 
-      {/* Savings rate below */}
-      <p className="text-center text-xs text-stone-500">
-        {creditCardOnly ? 'No savings tracked — credit card statement' : `${savingsRate}% saved`}
-      </p>
+      {/* Below bar — savings rate + budget label if marker is visible */}
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-stone-500">
+          {creditCardOnly ? 'No savings tracked — credit card statement' : `${savingsRate}% saved`}
+        </p>
+        {budgetPct != null && (
+          <p className="text-xs text-stone-500">
+            ▲ Budget: {fmt(budget!)}
+          </p>
+        )}
+      </div>
     </div>
   )
 }
