@@ -123,9 +123,19 @@ export function CategoryView({
                 <h3 className="text-sm font-semibold text-stone-700">{category}</h3>
                 <span className="text-xs text-stone-400">{pct}%</span>
                 {overBudget && (
-                  <span className="relative inline-flex items-center justify-center shrink-0" title={`SGD ${overAmt.toLocaleString('en-SG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} over budget`}>
+                  <span className="group relative inline-flex items-center justify-center shrink-0">
+                    {/* Pulsing ring */}
                     <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60 animate-ping" />
-                    <span className="relative inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500 text-white text-[9px] font-black leading-none">!</span>
+                    {/* Badge */}
+                    <span className="relative inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-black leading-none">!</span>
+                    {/* Tooltip */}
+                    <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <span className="block bg-stone-800 text-white text-xs font-medium rounded-xl px-4 py-2.5 whitespace-nowrap shadow-xl">
+                        <span className="block text-amber-300 font-semibold mb-0.5">Over budget</span>
+                        SGD {overAmt.toLocaleString('en-SG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} more than planned
+                      </span>
+                      <span className="block w-2.5 h-2.5 bg-stone-800 rotate-45 mx-auto -mt-1.5 rounded-sm" />
+                    </span>
                   </span>
                 )}
               </div>

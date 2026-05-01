@@ -105,17 +105,16 @@ body {
   animation: sway 2s ease-in-out infinite;
 }
 
-/* Star twinkle — opacity only, no movement */
-@keyframes star-twinkle {
-  0%, 100% { opacity: 1;    }
-  35%       { opacity: 0.4; }
-  65%       { opacity: 0.8; }
+/* Sequenced sparkle stars — each pops in then fades */
+@keyframes sparkle-pop {
+  0%, 100%  { opacity: 0; transform: scale(0.3); }
+  25%, 60%  { opacity: 1; transform: scale(1);   }
+  80%        { opacity: 0; transform: scale(0.6); }
 }
 
-.animate-twinkle {
-  display: inline-block;
-  animation: star-twinkle 2.4s ease-in-out infinite;
-}
+.animate-sparkle-1 { display: inline-block; animation: sparkle-pop 2.4s ease-in-out infinite 0s; }
+.animate-sparkle-2 { display: inline-block; animation: sparkle-pop 2.4s ease-in-out infinite 0.5s; }
+.animate-sparkle-3 { display: inline-block; animation: sparkle-pop 2.4s ease-in-out infinite 1.0s; }
 
 /* Flower pot: sway → pop → repeat */
 @keyframes plant-dance {
