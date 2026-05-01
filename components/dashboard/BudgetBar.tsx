@@ -4,18 +4,15 @@ import Link from 'next/link'
 
 interface Props {
   spent: number | null
-  monthlyBudget: number | null
   categoryBudgets: Record<string, number> | null
 }
 
-export function BudgetBar({ spent, monthlyBudget, categoryBudgets }: Props) {
-  const categoryTotal = categoryBudgets
+export function BudgetBar({ spent, categoryBudgets }: Props) {
+  const total = categoryBudgets
     ? Object.values(categoryBudgets).filter((v) => v > 0).reduce((s, v) => s + v, 0)
     : 0
 
-  const target = monthlyBudget ?? (categoryTotal > 0 ? categoryTotal : null)
-
-  if (target == null) {
+  if (total === 0) {
     return (
       <Link
         href="/budget"
@@ -27,9 +24,9 @@ export function BudgetBar({ spent, monthlyBudget, categoryBudgets }: Props) {
   }
 
   const spentAmt = spent ?? 0
-  const pct = target > 0 ? Math.round((spentAmt / target) * 100) : 0
+  const pct = Math.round((spentAmt / total) * 100)
   const displayPct = Math.min(pct, 100)
-  const over = spentAmt > target
+  const over = spentAmt > total
 
   const barColor = pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-amber-400' : 'bg-green-500'
   const statusColor = over ? 'text-red-600' : 'text-stone-500'
@@ -37,15 +34,14 @@ export function BudgetBar({ spent, monthlyBudget, categoryBudgets }: Props) {
   const fmt = (n: number) =>
     'SGD ' + Math.abs(n).toLocaleString('en-SG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
-  const label = monthlyBudget != null ? 'Monthly budget' : 'Category budgets'
   const statusText = over
-    ? `${fmt(spentAmt - target)} over budget · ${fmt(spentAmt)} of ${fmt(target)}`
-    : `${fmt(spentAmt)} of ${fmt(target)} (${pct}%)`
+    ? `${fmt(spentAmt - total)} over budget · ${fmt(spentAmt)} of ${fmt(total)}`
+    : `${fmt(spentAmt)} of ${fmt(total)} (${pct}%)`
 
   return (
     <div className="rounded-2xl bg-white border border-stone-100 px-5 py-4 space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-stone-500">{label}</p>
+        <p className="text-xs font-medium text-stone-500">Monthly budget</p>
         <Link href="/budget" className="text-xs text-stone-400 hover:text-stone-600 transition">
           Edit →
         </Link>
