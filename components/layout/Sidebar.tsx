@@ -8,11 +8,17 @@ import { createClient } from '@/lib/supabase/client'
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
   { href: '/breakdown', label: 'Spending Breakdown', icon: '📊' },
+  { href: '/budget', label: 'Budget', icon: '🎯' },
   { href: '/history', label: 'Upload History', icon: '📂' },
   { href: '/settings', label: 'Settings', icon: '⚙️' },
 ]
 
-export function Sidebar({ onUpload }: { onUpload?: () => void }) {
+interface SidebarProps {
+  onUpload?: () => void
+  onCreateAccount?: () => void
+}
+
+export function Sidebar({ onUpload, onCreateAccount }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
@@ -21,12 +27,10 @@ export function Sidebar({ onUpload }: { onUpload?: () => void }) {
   useEffect(() => {
     const supabase = createClient()
 
-    // Read session from local cache immediately (no network round-trip)
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAnonymous(session?.user?.is_anonymous ?? true)
     })
 
-    // React to sign-in / sign-out events
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAnonymous(session?.user?.is_anonymous ?? true)
     })
@@ -38,6 +42,16 @@ export function Sidebar({ onUpload }: { onUpload?: () => void }) {
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/demo')
+  }
+
+  function handleCreateAccount() {
+    if (onCreateAccount) {
+      onCreateAccount()
+    } else if (onUpload) {
+      onUpload()
+    } else {
+      router.push('/demo')
+    }
   }
 
   return (
@@ -76,7 +90,6 @@ export function Sidebar({ onUpload }: { onUpload?: () => void }) {
         })}
       </nav>
 
-      {/* Account section */}
       <div className="border-t border-stone-100 px-2 py-3 space-y-1">
         {isAnonymous ? (
           <>
@@ -88,7 +101,7 @@ export function Sidebar({ onUpload }: { onUpload?: () => void }) {
               {!collapsed && <span>Sign in</span>}
             </Link>
             <button
-              onClick={onUpload}
+              onClick={handleCreateAccount}
               className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-800 transition"
             >
               <span className="text-base shrink-0">✨</span>

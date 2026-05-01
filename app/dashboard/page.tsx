@@ -59,7 +59,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
-  const [monthlyBudget, setMonthlyBudget] = useState<number | null>(null)
+  const [categoryBudgets, setCategoryBudgets] = useState<Record<string, number> | null>(null)
 
   // For anonymous users, only show the report when the selected month matches the upload's month
   const displayReport = isAnonymous
@@ -116,7 +116,7 @@ export default function DashboardPage() {
       } else {
         fetch('/api/user')
           .then((r) => (r.ok ? r.json() : null))
-          .then((u) => { if (u?.monthly_budget != null) setMonthlyBudget(u.monthly_budget) })
+          .then((u) => { if (u) setCategoryBudgets(u.category_budgets ?? {}) })
           .catch(() => {})
       }
     })
@@ -173,11 +173,20 @@ export default function DashboardPage() {
     setFlow({ stage: 'needs_password_anonymous', file })
   }, [])
 
+  const handleCreateAccount = useCallback(() => {
+    const pending = sessionStorage.getItem('finclarity_pending_upload')
+    if (pending) {
+      openAccountCreation()
+    } else {
+      openUpload()
+    }
+  }, [])
+
   const hasMultipleMonths = false // will be updated in step 9 with check_ins
 
   return (
     <div className="flex h-screen bg-stone-50">
-      <Sidebar onUpload={openUpload} />
+      <Sidebar onUpload={openUpload} onCreateAccount={handleCreateAccount} />
 
       <div className="flex flex-col flex-1 min-w-0">
         <TopBar onUpload={openUpload} />
@@ -213,6 +222,13 @@ export default function DashboardPage() {
               </div>
             ) : (
               <>
+                {!isAnonymous && (
+                  <BudgetBar
+                    spent={displayReport?.summary_cards_json?.spent ?? null}
+                    categoryBudgets={categoryBudgets}
+                  />
+                )}
+
                 <NarrativeSummary
                   narrative={displayReport?.narrative_text ?? null}
                   hasUploads={hasUploads}
@@ -228,14 +244,6 @@ export default function DashboardPage() {
                 />
 
                 <InsightTiles month={month} isAnonymous={isAnonymous} />
-
-                {!isAnonymous && (
-                  <BudgetBar
-                    spent={displayReport?.summary_cards_json?.spent ?? null}
-                    budget={monthlyBudget}
-                    onBudgetChange={setMonthlyBudget}
-                  />
-                )}
 
                 <ObservationsPanel
                   observations={displayReport?.observations_json ?? null}
