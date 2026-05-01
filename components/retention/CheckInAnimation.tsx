@@ -28,7 +28,7 @@ export function CheckInAnimation({ onDone }: Props) {
       } catch { /* ignore */ }
     }
     load()
-    const t = setTimeout(onDone, 5000)
+    const t = setTimeout(onDone, 6000)
     return () => clearTimeout(t)
   }, [onDone])
 
@@ -43,14 +43,11 @@ export function CheckInAnimation({ onDone }: Props) {
   return (
     <div className="flex flex-col items-center gap-5 py-6 text-center">
 
-      {/* Growing plant animation */}
-      <div className="flex flex-col items-center" style={{ gap: 0 }}>
-        {/* Flower — blooms last */}
-        <span className="text-4xl plant-bloom">{flower}</span>
-        {/* Stem — grows upward from the pot */}
-        <div className="w-[3px] h-12 rounded-full bg-green-400 plant-stem-grow" />
-        {/* Pot — rises in first */}
-        <span className="text-5xl plant-pot-rise">🪴</span>
+      {/* Plant: sways then pops, loops */}
+      <div className="plant-dance" style={{ gap: 0 }}>
+        <span className="text-4xl leading-none">{flower}</span>
+        <div className="w-[3px] h-10 rounded-full bg-green-400" />
+        <span className="text-5xl leading-none">🪴</span>
       </div>
 
       <div>
