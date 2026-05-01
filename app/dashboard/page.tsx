@@ -14,7 +14,6 @@ import { ObservationsPanel } from '@/components/dashboard/ObservationsPanel'
 import { NudgesSection } from '@/components/dashboard/NudgesSection'
 import { InsightTiles } from '@/components/dashboard/InsightTiles'
 import { BudgetBar } from '@/components/dashboard/BudgetBar'
-import { BudgetCallouts } from '@/components/dashboard/BudgetCallouts'
 import { SaveProgressForm } from '@/components/upload/SaveProgressForm'
 import { MonthSelector } from '@/components/ui/MonthSelector'
 import { Sidebar } from '@/components/layout/Sidebar'
@@ -259,11 +258,8 @@ export default function DashboardPage() {
                     spent={displayReport?.summary_cards_json?.spent ?? null}
                     monthlyBudget={monthlyBudget}
                     categoryBudgets={categoryBudgets}
+                    month={month}
                   />
-                )}
-
-                {!isAnonymous && categoryBudgets && Object.keys(categoryBudgets).length > 0 && (
-                  <BudgetCallouts month={month} categoryBudgets={categoryBudgets} />
                 )}
 
                 <InsightTiles month={month} isAnonymous={isAnonymous} />
