@@ -60,6 +60,7 @@ export default function DashboardPage() {
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
   const [categoryBudgets, setCategoryBudgets] = useState<Record<string, number> | null>(null)
+  const [monthlyBudget, setMonthlyBudget] = useState<number | null>(null)
 
   // For anonymous users, only show the report when the selected month matches the upload's month
   const displayReport = isAnonymous
@@ -116,7 +117,12 @@ export default function DashboardPage() {
       } else {
         fetch('/api/user')
           .then((r) => (r.ok ? r.json() : null))
-          .then((u) => { if (u) setCategoryBudgets(u.category_budgets ?? {}) })
+          .then((u) => {
+            if (u) {
+              setCategoryBudgets(u.category_budgets ?? {})
+              setMonthlyBudget(u.monthly_budget ?? null)
+            }
+          })
           .catch(() => {})
       }
     })
@@ -225,6 +231,7 @@ export default function DashboardPage() {
                 {!isAnonymous && (
                   <BudgetBar
                     spent={displayReport?.summary_cards_json?.spent ?? null}
+                    monthlyBudget={monthlyBudget}
                     categoryBudgets={categoryBudgets}
                   />
                 )}

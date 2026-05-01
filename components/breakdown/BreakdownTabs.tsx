@@ -23,9 +23,11 @@ function accountLabel(tx: Transaction) {
 export function BreakdownTabs({
   transactions,
   month,
+  categoryBudgets = {},
 }: {
   transactions: Transaction[]
   month: string
+  categoryBudgets?: Record<string, number>
 }) {
   const [active, setActive] = useState('category')
   const [filterAccount, setFilterAccount] = useState('all')
@@ -141,7 +143,7 @@ export function BreakdownTabs({
         ))}
       </div>
 
-      {active === 'category' && <CategoryView transactions={filtered} />}
+      {active === 'category' && <CategoryView transactions={filtered} categoryBudgets={categoryBudgets} />}
       {active === 'account' && <AccountView transactions={filtered} />}
       {active === 'type' && <TypeView transactions={filtered} />}
       {active === 'time' && <TimeView transactions={filtered} month={month} />}

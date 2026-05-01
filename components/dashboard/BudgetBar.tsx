@@ -4,13 +4,18 @@ import Link from 'next/link'
 
 interface Props {
   spent: number | null
+  monthlyBudget: number | null
   categoryBudgets: Record<string, number> | null
 }
 
-export function BudgetBar({ spent, categoryBudgets }: Props) {
-  const budgetEntries = categoryBudgets ? Object.entries(categoryBudgets).filter(([, v]) => v > 0) : []
+export function BudgetBar({ spent, monthlyBudget, categoryBudgets }: Props) {
+  const categoryTotal = categoryBudgets
+    ? Object.values(categoryBudgets).filter((v) => v > 0).reduce((s, v) => s + v, 0)
+    : 0
 
-  if (budgetEntries.length === 0) {
+  const target = monthlyBudget ?? (categoryTotal > 0 ? categoryTotal : null)
+
+  if (target == null) {
     return (
       <Link
         href="/budget"
@@ -21,11 +26,10 @@ export function BudgetBar({ spent, categoryBudgets }: Props) {
     )
   }
 
-  const totalBudget = budgetEntries.reduce((sum, [, v]) => sum + v, 0)
   const spentAmt = spent ?? 0
-  const pct = totalBudget > 0 ? Math.round((spentAmt / totalBudget) * 100) : 0
+  const pct = target > 0 ? Math.round((spentAmt / target) * 100) : 0
   const displayPct = Math.min(pct, 100)
-  const over = spentAmt > totalBudget
+  const over = spentAmt > target
 
   const barColor = pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-amber-400' : 'bg-green-500'
   const statusColor = over ? 'text-red-600' : 'text-stone-500'
@@ -33,14 +37,15 @@ export function BudgetBar({ spent, categoryBudgets }: Props) {
   const fmt = (n: number) =>
     'SGD ' + Math.abs(n).toLocaleString('en-SG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
+  const label = monthlyBudget != null ? 'Monthly budget' : 'Category budgets'
   const statusText = over
-    ? `${fmt(spentAmt - totalBudget)} over budget · ${fmt(spentAmt)} of ${fmt(totalBudget)}`
-    : `${fmt(spentAmt)} of ${fmt(totalBudget)} budgeted (${pct}%)`
+    ? `${fmt(spentAmt - target)} over budget · ${fmt(spentAmt)} of ${fmt(target)}`
+    : `${fmt(spentAmt)} of ${fmt(target)} (${pct}%)`
 
   return (
     <div className="rounded-2xl bg-white border border-stone-100 px-5 py-4 space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-stone-500">Monthly budget</p>
+        <p className="text-xs font-medium text-stone-500">{label}</p>
         <Link href="/budget" className="text-xs text-stone-400 hover:text-stone-600 transition">
           Edit →
         </Link>

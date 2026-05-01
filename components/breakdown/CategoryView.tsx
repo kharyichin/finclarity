@@ -38,7 +38,13 @@ function slug(s: string) {
   return 'cat-' + s.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 }
 
-export function CategoryView({ transactions }: { transactions: Transaction[] }) {
+export function CategoryView({
+  transactions,
+  categoryBudgets = {},
+}: {
+  transactions: Transaction[]
+  categoryBudgets?: Record<string, number>
+}) {
   const groups = new Map<string, Transaction[]>()
 
   for (const tx of transactions) {
@@ -105,14 +111,22 @@ export function CategoryView({ transactions }: { transactions: Transaction[] }) 
       {sorted.map(([category, txs], i) => {
         const total = totals[i].total
         const pct = ((total / grandTotal) * 100).toFixed(0)
+        const budget = categoryBudgets[category]
+        const overBudget = budget != null && budget > 0 && total > budget
+        const overAmt = overBudget ? total - budget : 0
         return (
           <div key={category} id={slug(category)}>
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className={`inline-block w-2.5 h-2.5 rounded-full ${CATEGORY_COLOURS[i % CATEGORY_COLOURS.length]}`} />
                 <span>{getCategoryIcon(category)}</span>
                 <h3 className="text-sm font-semibold text-stone-700">{category}</h3>
                 <span className="text-xs text-stone-400">{pct}%</span>
+                {overBudget && (
+                  <span className="rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-xs font-medium text-red-600">
+                    SGD {overAmt.toLocaleString('en-SG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} over budget
+                  </span>
+                )}
               </div>
               <span className="text-sm font-medium text-stone-600">{total.toFixed(2)} SGD</span>
             </div>

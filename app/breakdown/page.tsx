@@ -35,12 +35,20 @@ export default function BreakdownPage() {
   const [flow, setFlow] = useState<UploadFlow>({ stage: 'idle' })
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
+  const [categoryBudgets, setCategoryBudgets] = useState<Record<string, number>>({})
 
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => {
-      setIsAnonymous(data.user?.is_anonymous ?? false)
+      const anon = data.user?.is_anonymous ?? false
+      setIsAnonymous(anon)
       setAuthChecked(true)
+      if (!anon) {
+        fetch('/api/user')
+          .then((r) => (r.ok ? r.json() : null))
+          .then((u) => { if (u?.category_budgets) setCategoryBudgets(u.category_budgets) })
+          .catch(() => {})
+      }
     })
   }, [])
 
@@ -202,7 +210,7 @@ export default function BreakdownPage() {
                 </button>
               </div>
             ) : (
-              <BreakdownTabs transactions={transactions} month={month} />
+              <BreakdownTabs transactions={transactions} month={month} categoryBudgets={categoryBudgets} />
             )}
           </div>
         </main>
