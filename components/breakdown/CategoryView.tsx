@@ -123,8 +123,9 @@ export function CategoryView({
                 <h3 className="text-sm font-semibold text-stone-700">{category}</h3>
                 <span className="text-xs text-stone-400">{pct}%</span>
                 {overBudget && (
-                  <span className="rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-xs font-medium text-red-600">
-                    SGD {overAmt.toLocaleString('en-SG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} over budget
+                  <span className="relative inline-flex items-center justify-center shrink-0" title={`SGD ${overAmt.toLocaleString('en-SG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} over budget`}>
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60 animate-ping" />
+                    <span className="relative inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500 text-white text-[9px] font-black leading-none">!</span>
                   </span>
                 )}
               </div>
