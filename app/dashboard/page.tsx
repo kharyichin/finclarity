@@ -229,6 +229,13 @@ export default function DashboardPage() {
               </div>
             ) : (
               <>
+                <NarrativeSummary
+                  narrative={displayReport?.narrative_text ?? null}
+                  hasUploads={hasUploads}
+                  onUpload={openUpload}
+                  topCategory={displayReport?.summary_cards_json?.top_category ?? null}
+                />
+
                 {!isAnonymous && (
                   <BudgetBar
                     spent={displayReport?.summary_cards_json?.spent ?? null}
@@ -240,12 +247,6 @@ export default function DashboardPage() {
                 {!isAnonymous && categoryBudgets && Object.keys(categoryBudgets).length > 0 && (
                   <BudgetCallouts month={month} categoryBudgets={categoryBudgets} />
                 )}
-
-                <NarrativeSummary
-                  narrative={displayReport?.narrative_text ?? null}
-                  hasUploads={hasUploads}
-                  onUpload={openUpload}
-                />
 
                 <SpendSaveStrip data={displayReport?.summary_cards_json ?? null} />
 
