@@ -4,6 +4,14 @@ import { useEffect, useState } from 'react'
 import { calculateStreak } from '@/lib/utils/streak'
 import type { CheckIn } from '@/types'
 
+function getPlantStage(streak: number): { emoji: string; label: string } {
+  if (streak >= 6) return { emoji: '🌺', label: 'flowering' }
+  if (streak >= 4) return { emoji: '🌸', label: 'blooming' }
+  if (streak >= 3) return { emoji: '🪴', label: 'potted' }
+  if (streak >= 2) return { emoji: '🌿', label: 'growing' }
+  return { emoji: '🌱', label: 'sprouting' }
+}
+
 export function StreakCounter() {
   const [streak, setStreak] = useState(0)
   const [joinedSince, setJoinedSince] = useState<string | null>(null)
@@ -37,14 +45,16 @@ export function StreakCounter() {
 
   if (streak === 0) return null
 
+  const { emoji } = getPlantStage(streak)
+
   return (
     <div className="flex flex-col items-end">
       <div className="flex items-center gap-1.5 text-sm text-stone-600">
-        <span>🌱</span>
+        <span className="animate-sway">{emoji}</span>
         <span>{streak} month{streak !== 1 ? 's' : ''} in a row</span>
       </div>
       {joinedSince && (
-        <span className="text-xs text-stone-400">joined since {joinedSince}</span>
+        <span className="text-xs text-stone-400">since {joinedSince}</span>
       )}
     </div>
   )

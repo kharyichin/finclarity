@@ -89,3 +89,46 @@ body {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-12deg); }
+  50%       { transform: rotate(12deg); }
+}
+
+.animate-sway {
+  display: inline-block;
+  transform-origin: bottom center;
+  animation: sway 2s ease-in-out infinite;
+}
+
+/* Flower pot growing animation */
+@keyframes pot-rise {
+  from { transform: translateY(12px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes stem-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+@keyframes bloom {
+  0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+  65%  { transform: scale(1.2) rotate(6deg);  opacity: 1; }
+  100% { transform: scale(1)   rotate(0deg);  opacity: 1; }
+}
+
+.plant-pot-rise {
+  animation: pot-rise 0.5s ease-out forwards;
+}
+
+.plant-stem-grow {
+  transform-origin: bottom center;
+  transform: scaleY(0);
+  animation: stem-grow 0.7s ease-out 0.4s forwards;
+}
+
+.plant-bloom {
+  opacity: 0;
+  animation: bloom 0.55s ease-out 1.0s forwards;
+}
