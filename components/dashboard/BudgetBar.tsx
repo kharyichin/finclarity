@@ -4,15 +4,19 @@ import Link from 'next/link'
 
 interface Props {
   spent: number | null
+  monthlyBudget: number | null
   categoryBudgets: Record<string, number> | null
 }
 
-export function BudgetBar({ spent, categoryBudgets }: Props) {
-  const total = categoryBudgets
+export function BudgetBar({ spent, monthlyBudget, categoryBudgets }: Props) {
+  const categorySum = categoryBudgets
     ? Object.values(categoryBudgets).filter((v) => v > 0).reduce((s, v) => s + v, 0)
     : 0
 
-  if (total === 0) {
+  // Category budgets always win; fall back to manual overall if no categories set
+  const target = categorySum > 0 ? categorySum : (monthlyBudget ?? null)
+
+  if (target == null || target === 0) {
     return (
       <Link
         href="/budget"
@@ -24,9 +28,9 @@ export function BudgetBar({ spent, categoryBudgets }: Props) {
   }
 
   const spentAmt = spent ?? 0
-  const pct = Math.round((spentAmt / total) * 100)
+  const pct = Math.round((spentAmt / target) * 100)
   const displayPct = Math.min(pct, 100)
-  const over = spentAmt > total
+  const over = spentAmt > target
 
   const barColor = pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-amber-400' : 'bg-green-500'
   const statusColor = over ? 'text-red-600' : 'text-stone-500'
@@ -34,14 +38,15 @@ export function BudgetBar({ spent, categoryBudgets }: Props) {
   const fmt = (n: number) =>
     'SGD ' + Math.abs(n).toLocaleString('en-SG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
+  const label = categorySum > 0 ? 'Monthly budget' : 'Overall budget'
   const statusText = over
-    ? `${fmt(spentAmt - total)} over budget · ${fmt(spentAmt)} of ${fmt(total)}`
-    : `${fmt(spentAmt)} of ${fmt(total)} (${pct}%)`
+    ? `${fmt(spentAmt - target)} over budget · ${fmt(spentAmt)} of ${fmt(target)}`
+    : `${fmt(spentAmt)} of ${fmt(target)} (${pct}%)`
 
   return (
     <div className="rounded-2xl bg-white border border-stone-100 px-5 py-4 space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-stone-500">Monthly budget</p>
+        <p className="text-xs font-medium text-stone-500">{label}</p>
         <Link href="/budget" className="text-xs text-stone-400 hover:text-stone-600 transition">
           Edit →
         </Link>
