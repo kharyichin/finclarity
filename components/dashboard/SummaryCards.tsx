@@ -3,13 +3,13 @@ import type { SummaryCards as SummaryCardsType } from '@/types'
 
 function SparkleIcon() {
   return (
-    <span className="relative inline-flex items-center justify-center w-5 h-5 shrink-0">
+    <span className="relative inline-flex items-center justify-center w-5 h-6 shrink-0">
       {/* Small star — first */}
-      <span className="absolute top-0 left-0 text-[7px] text-white animate-sparkle-1">✦</span>
+      <span className="absolute text-[7px] text-white animate-sparkle-1" style={{ top: 2, left: 0 }}>✦</span>
       {/* Mid star — second */}
-      <span className="absolute bottom-0 left-1 text-[10px] text-white animate-sparkle-2">✦</span>
-      {/* Large star — last */}
-      <span className="absolute top-0 right-0 text-[15px] text-white animate-sparkle-3">✦</span>
+      <span className="absolute text-[10px] text-white animate-sparkle-2" style={{ bottom: 0, left: 3 }}>✦</span>
+      {/* Large star — last, shifted up to clear mid */}
+      <span className="absolute text-[15px] text-white animate-sparkle-3" style={{ top: -2, right: 0 }}>✦</span>
     </span>
   )
 }

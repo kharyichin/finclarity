@@ -13,7 +13,6 @@ import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { ObservationsPanel } from '@/components/dashboard/ObservationsPanel'
 import { NudgesSection } from '@/components/dashboard/NudgesSection'
 import { InsightTiles } from '@/components/dashboard/InsightTiles'
-import { BudgetBar } from '@/components/dashboard/BudgetBar'
 import { SaveProgressForm } from '@/components/upload/SaveProgressForm'
 import { MonthSelector } from '@/components/ui/MonthSelector'
 import { Sidebar } from '@/components/layout/Sidebar'
@@ -253,6 +252,9 @@ export default function DashboardPage() {
                       : 0
                     return catSum > 0 ? catSum : (monthlyBudget ?? null)
                   })() : null}
+                  categoryBudgets={!isAnonymous ? categoryBudgets : null}
+                  month={month}
+                  isAnonymous={isAnonymous}
                 />
 
                 <SummaryCards
@@ -260,15 +262,6 @@ export default function DashboardPage() {
                   hasComparison={hasMultipleMonths}
                   creditCardOnly={creditCardOnly}
                 />
-
-                {!isAnonymous && (
-                  <BudgetBar
-                    spent={displayReport?.summary_cards_json?.spent ?? null}
-                    monthlyBudget={monthlyBudget}
-                    categoryBudgets={categoryBudgets}
-                    month={month}
-                  />
-                )}
 
                 <InsightTiles month={month} isAnonymous={isAnonymous} />
 
