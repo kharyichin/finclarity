@@ -42,12 +42,12 @@ export function SummaryCards({ data, hasComparison, creditCardOnly }: SummaryCar
 
       {/* Total Saved — deep navy or locked */}
       {creditCardOnly ? (
-        <div className="rounded-2xl border border-dashed border-stone-200 bg-white p-5 flex flex-col gap-2">
+        <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: '#819898' }}>
           <div className="flex items-center gap-2">
             <span className="text-base">🌱</span>
-            <p className="text-xs font-medium text-stone-500">Total saved</p>
+            <p className="text-xs font-medium text-white/70">Total saved</p>
           </div>
-          <p className="text-sm text-stone-400 leading-snug">Add your bank statement to see savings</p>
+          <p className="text-sm text-white/90 leading-snug">Add your bank statement to see savings</p>
         </div>
       ) : (
         <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: '#174D7C' }}>
@@ -62,15 +62,15 @@ export function SummaryCards({ data, hasComparison, creditCardOnly }: SummaryCar
         </div>
       )}
 
-      {/* Biggest Category — warm orange */}
-      <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: '#FF9463' }}>
+      {/* Biggest Category — teal blue */}
+      <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: '#4C7D8E' }}>
         <div className="flex items-center gap-2">
           <span className="text-base">🏷️</span>
-          <p className="text-xs font-medium text-stone-700">Biggest category</p>
+          <p className="text-xs font-medium text-white/70">Biggest category</p>
         </div>
         <div className="flex items-center gap-2.5 mt-0.5">
           <span className="text-2xl">{getCategoryIcon(data.top_category)}</span>
-          <p className="text-xl font-bold text-stone-800 leading-tight">{data.top_category}</p>
+          <p className="text-xl font-bold text-white leading-tight">{data.top_category}</p>
         </div>
       </div>
 
