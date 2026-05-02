@@ -182,22 +182,26 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
     const monthHasBankAccount = monthStmts?.some((s) => s.statement_type === 'bank_account') ?? isAccountStatement
     const allTx = allTxRows ?? []
 
-    const combinedOutflows = allTx.filter((t) =>
-      t.type === 'expense' || (monthHasBankAccount && t.type === 'transfer')
-    )
+    // Spending = expenses only. The extraction prompt classifies merchant PayNow as
+    // 'expense' so they appear here. Internal transfers / CC bill payments stay as
+    // 'transfer' and are excluded — including them inflated the total with savings
+    // movements, CC payments, etc.
+    const combinedExpenses = allTx.filter((t) => t.type === 'expense')
     const combinedIncome = allTx.filter((t) =>
       t.type === 'income' && t.claude_category !== 'Refund & Reversal' && t.claude_category !== 'Interest'
     )
     const combinedTopCategory = getTopCategory(
-      combinedOutflows.map((t) => ({ category: t.claude_category ?? 'Other', amount: t.sgd_amount ?? t.amount }))
+      combinedExpenses.map((t) => ({ category: t.claude_category ?? 'Other', amount: t.sgd_amount ?? t.amount }))
     )
-    const combinedSpent = combinedOutflows.reduce((s, t) => s + (t.sgd_amount ?? t.amount), 0)
+    const combinedSpent = combinedExpenses.reduce((s, t) => s + (t.sgd_amount ?? t.amount), 0)
     const combinedIncomeTot = combinedIncome.reduce((s, t) => s + (t.sgd_amount ?? t.amount), 0)
 
     const currentSummary: TransactionSummary = {
       month_year: monthYear,
       total_spent: combinedSpent,
-      total_saved: monthHasBankAccount ? combinedIncomeTot - combinedSpent : combinedIncomeTot,
+      total_saved: monthHasBankAccount
+        ? combinedIncomeTot - combinedSpent  // net savings for bank accounts
+        : combinedIncomeTot,
       top_category: combinedTopCategory,
       transactions: [],
     }
@@ -283,20 +287,17 @@ async function runAnonymousPipeline(fileBytes: Buffer, password?: string): Promi
 
     const isAccountStatement = extracted.statementType === 'bank_account'
     const expenses = transactions.filter((t) => t.type === 'expense')
-    const outflows = isAccountStatement
-      ? transactions.filter((t) => t.type === 'expense' || t.type === 'transfer')
-      : expenses
     const trueIncome = transactions.filter(
       (t) => t.type === 'income' && t.category !== 'Refund & Reversal' && t.category !== 'Interest'
     )
-    const topCategory = getTopCategory(outflows)
+    const topCategory = getTopCategory(expenses)
+    const totalSpent = expenses.reduce((sum, t) => sum + t.amount, 0)
+    const totalIncome = trueIncome.reduce((sum, t) => sum + t.amount, 0)
 
     const currentSummary: TransactionSummary = {
       month_year: monthYear,
-      total_spent: outflows.reduce((sum, t) => sum + t.amount, 0),
-      total_saved: isAccountStatement
-        ? trueIncome.reduce((sum, t) => sum + t.amount, 0) - outflows.reduce((sum, t) => sum + t.amount, 0)
-        : trueIncome.reduce((sum, t) => sum + t.amount, 0),
+      total_spent: totalSpent,
+      total_saved: isAccountStatement ? totalIncome - totalSpent : totalIncome,
       top_category: topCategory,
       transactions: [],
     }
