@@ -217,26 +217,42 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2">
                 <h1 className="text-lg font-semibold text-stone-800">{getMonthHeading(month)}</h1>
                 {!isAnonymous && report && (
-                  <button
-                    onClick={async () => {
-                      setRecalculating(true)
-                      try {
-                        await fetch('/api/reports/recalculate', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ month }),
-                        })
-                        await fetchReport(month)
-                      } finally {
-                        setRecalculating(false)
-                      }
-                    }}
-                    disabled={recalculating}
-                    title="Recalculate report from current transactions"
-                    className="text-stone-300 hover:text-stone-500 transition text-sm disabled:opacity-40"
-                  >
-                    {recalculating ? '⟳' : '↻'}
-                  </button>
+                  <div className="group relative">
+                    <button
+                      onClick={async () => {
+                        setRecalculating(true)
+                        try {
+                          await fetch('/api/reports/recalculate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ month }),
+                          })
+                          await fetchReport(month)
+                        } finally {
+                          setRecalculating(false)
+                        }
+                      }}
+                      disabled={recalculating}
+                      className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium border transition
+                        ${recalculating
+                          ? 'border-stone-200 bg-stone-50 text-stone-400 cursor-not-allowed'
+                          : 'border-stone-300 bg-white text-stone-600 hover:bg-stone-50 hover:border-stone-400 hover:text-stone-800'
+                        }`}
+                    >
+                      <span className={recalculating ? 'animate-spin inline-block' : ''}>↻</span>
+                      {recalculating ? 'Recalculating…' : 'Recalculate'}
+                    </button>
+                    {/* Tooltip */}
+                    {!recalculating && (
+                      <div className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <div className="bg-stone-800 text-white text-xs rounded-xl px-3 py-2 whitespace-nowrap shadow-xl text-center">
+                          <span className="block font-medium mb-0.5">Refresh AI report</span>
+                          <span className="text-white/70">Regenerates narrative and figures from your uploaded transactions</span>
+                        </div>
+                        <div className="w-2.5 h-2.5 bg-stone-800 rotate-45 mx-auto -mt-1.5 rounded-sm" />
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
               <MonthSelector value={month} onChange={setMonth} />
