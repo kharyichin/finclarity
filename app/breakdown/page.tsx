@@ -245,6 +245,7 @@ export default function BreakdownPage() {
                 onError={(msg) => setFlow({ stage: 'error', message: msg })}
                 onAnonymousSuccess={onAnonymousSuccess}
                 onNeedsPasswordAnonymous={onNeedsPasswordAnonymous}
+                onAllDone={onSuccess}
               />
             )}
             {flow.stage === 'processing' && (

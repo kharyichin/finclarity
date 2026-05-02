@@ -316,6 +316,7 @@ export default function DashboardPage() {
                 onError={(msg) => setFlow({ stage: 'error', message: msg })}
                 onAnonymousSuccess={onAnonymousSuccess}
                 onNeedsPasswordAnonymous={onNeedsPasswordAnonymous}
+                onAllDone={onSuccess}
               />
             )}
 
