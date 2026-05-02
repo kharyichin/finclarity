@@ -61,6 +61,7 @@ export default function DashboardPage() {
   const [authChecked, setAuthChecked] = useState(false)
   const [categoryBudgets, setCategoryBudgets] = useState<Record<string, number> | null>(null)
   const [monthlyBudget, setMonthlyBudget] = useState<number | null>(null)
+  const [recalculating, setRecalculating] = useState(false)
 
   // For anonymous users, only show the report when the selected month matches the upload's month
   const displayReport = isAnonymous
@@ -212,8 +213,32 @@ export default function DashboardPage() {
               </div>
             )}
 
-            <div className="flex items-center justify-between">
-              <h1 className="text-lg font-semibold text-stone-800">{getMonthHeading(month)}</h1>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-semibold text-stone-800">{getMonthHeading(month)}</h1>
+                {!isAnonymous && report && (
+                  <button
+                    onClick={async () => {
+                      setRecalculating(true)
+                      try {
+                        await fetch('/api/reports/recalculate', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ month }),
+                        })
+                        await fetchReport(month)
+                      } finally {
+                        setRecalculating(false)
+                      }
+                    }}
+                    disabled={recalculating}
+                    title="Recalculate report from current transactions"
+                    className="text-stone-300 hover:text-stone-500 transition text-sm disabled:opacity-40"
+                  >
+                    {recalculating ? '⟳' : '↻'}
+                  </button>
+                )}
+              </div>
               <MonthSelector value={month} onChange={setMonth} />
             </div>
 
