@@ -120,17 +120,29 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
     const distinctAccounts = [...new Set(transactions.map((t) => t.accountLast4).filter(Boolean))]
     const isConsolidated = distinctAccounts.length > 1
 
+    const isAccountStatement = extracted.statementType === 'bank_account'
+
     const expenses = transactions.filter((t) => t.type === 'expense')
-    // Reversals cancel a previous charge — exclude from savings total
+    // For bank accounts: include outgoing transfers (merchant PayNow etc.) in spending
+    const outflows = isAccountStatement
+      ? transactions.filter((t) => t.type === 'expense' || t.type === 'transfer')
+      : expenses
+
+    // Reversals cancel a previous charge — exclude from income/savings
+    // For bank accounts: exclude bank interest from "income" so savings reflects real cash in
     const trueIncome = transactions.filter(
-      (t) => t.type === 'income' && t.category !== 'Refund & Reversal'
+      (t) => t.type === 'income'
+        && t.category !== 'Refund & Reversal'
+        && t.category !== 'Interest'
     )
-    const topCategory = getTopCategory(expenses)
+    const topCategory = getTopCategory(outflows)
 
     const currentSummary: TransactionSummary = {
       month_year: monthYear,
-      total_spent: expenses.reduce((sum, t) => sum + t.amount, 0),
-      total_saved: trueIncome.reduce((sum, t) => sum + t.amount, 0),
+      total_spent: outflows.reduce((sum, t) => sum + t.amount, 0),
+      total_saved: isAccountStatement
+        ? trueIncome.reduce((sum, t) => sum + t.amount, 0) - outflows.reduce((sum, t) => sum + t.amount, 0)
+        : trueIncome.reduce((sum, t) => sum + t.amount, 0),
       top_category: topCategory,
       transactions: [],
     }
@@ -240,16 +252,22 @@ async function runAnonymousPipeline(fileBytes: Buffer, password?: string): Promi
     const distinctAccounts = [...new Set(transactions.map((t) => t.accountLast4).filter(Boolean))]
     const isConsolidated = distinctAccounts.length > 1
 
+    const isAccountStatement = extracted.statementType === 'bank_account'
     const expenses = transactions.filter((t) => t.type === 'expense')
+    const outflows = isAccountStatement
+      ? transactions.filter((t) => t.type === 'expense' || t.type === 'transfer')
+      : expenses
     const trueIncome = transactions.filter(
-      (t) => t.type === 'income' && t.category !== 'Refund & Reversal'
+      (t) => t.type === 'income' && t.category !== 'Refund & Reversal' && t.category !== 'Interest'
     )
-    const topCategory = getTopCategory(expenses)
+    const topCategory = getTopCategory(outflows)
 
     const currentSummary: TransactionSummary = {
       month_year: monthYear,
-      total_spent: expenses.reduce((sum, t) => sum + t.amount, 0),
-      total_saved: trueIncome.reduce((sum, t) => sum + t.amount, 0),
+      total_spent: outflows.reduce((sum, t) => sum + t.amount, 0),
+      total_saved: isAccountStatement
+        ? trueIncome.reduce((sum, t) => sum + t.amount, 0) - outflows.reduce((sum, t) => sum + t.amount, 0)
+        : trueIncome.reduce((sum, t) => sum + t.amount, 0),
       top_category: topCategory,
       transactions: [],
     }

@@ -69,7 +69,7 @@ Rules:
   * Salary, wages, payroll deposits (look for: SALARY, PAYROLL, PAY, WAGES, BONUS, COMMISSION, or large regular credits from employers) = type "income", category "Income".
   * Bank interest, savings interest, credit interest (look for: INTEREST, INT CREDIT, CREDIT INT, INTEREST CREDIT, SAVINGS INT) = type "income", category "Interest" — this is NOT the same as salary income.
   * Incoming PayNow/FAST/GIRO from other people or businesses = type "income" if it appears to be a payment received; type "transfer" if it is moving money between own accounts.
-  * Outgoing PayNow/FAST/GIRO/transfers = type "transfer".
+  * Outgoing PayNow/FAST/GIRO/bank transfers: If the counterparty looks like a merchant, business, restaurant, utility company, subscription service, or retailer (business-sounding name, known brand, service provider) → type "expense" with the appropriate category (Food & Dining, Transport, Utilities, etc.). If the counterparty looks like an individual person's name or the description indicates own-account movement (e.g. "TO POSB ****1234", "OWN ACCOUNT", "SAVINGS ACCOUNT") → type "transfer".
   * Direct debit expenses (utilities, subscriptions, purchases) = type "expense".
 - REVERSALS: Transaction reversals, refunds, and credits from merchants (e.g. "REVERSAL", "REFUND", "CR ADJ") = type "income", category "Refund & Reversal". These cancel a previous charge — do NOT count as savings.
 - Genuine cashback from the bank = type "income", category "Cashback".
