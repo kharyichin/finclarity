@@ -31,6 +31,28 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: 'No transactions found for this month' }, { status: 404 })
   }
 
+  // Fix misclassified transactions: type='expense' but category='Transfer' is a
+  // contradiction — these are fund movements, not purchases. Reclassify in DB.
+  const hasMisclassified = txRows.some(
+    (t) => t.type === 'expense' && (t.claude_category === 'Transfer' || t.claude_category === 'Internal Transfer')
+  )
+  let cleanTxRows = txRows
+  if (hasMisclassified) {
+    await supabase
+      .from('transactions')
+      .update({ type: 'transfer' })
+      .eq('user_id', user.id)
+      .eq('month_year', month)
+      .eq('type', 'expense')
+      .in('claude_category', ['Transfer', 'Internal Transfer'])
+    const { data: fixed } = await supabase
+      .from('transactions')
+      .select('type, claude_category, sgd_amount, amount')
+      .eq('user_id', user.id)
+      .eq('month_year', month)
+    cleanTxRows = fixed ?? txRows
+  }
+
   // Determine if any bank account statement exists for this month
   const { data: stmts } = await supabase
     .from('statements')
@@ -41,9 +63,9 @@ export async function POST(request: NextRequest) {
 
   const hasBankAccount = stmts?.some((s) => s.statement_type === 'bank_account') ?? false
 
-  // Recompute metrics — expenses only for spending (extraction prompt handles merchant PayNow)
-  const expenses = txRows.filter((t) => t.type === 'expense')
-  const income = txRows.filter(
+  // Recompute metrics from cleaned data
+  const expenses = cleanTxRows.filter((t) => t.type === 'expense')
+  const income = cleanTxRows.filter(
     (t) => t.type === 'income' && t.claude_category !== 'Refund & Reversal' && t.claude_category !== 'Interest'
   )
 

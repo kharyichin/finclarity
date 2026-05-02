@@ -185,11 +185,10 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
     const monthHasBankAccount = isAccountStatement || hasBankInDB
     const allTx = allTxRows ?? []
 
-    // Spending = expenses only. The extraction prompt classifies merchant PayNow as
-    // 'expense' so they appear here. Internal transfers / CC bill payments stay as
-    // 'transfer' and are excluded — including them inflated the total with savings
-    // movements, CC payments, etc.
-    const combinedExpenses = allTx.filter((t) => t.type === 'expense')
+    // Spending = expenses only, excluding any miscategorised transfer rows
+    const combinedExpenses = allTx.filter(
+      (t) => t.type === 'expense' && t.claude_category !== 'Transfer' && t.claude_category !== 'Internal Transfer'
+    )
     const combinedIncome = allTx.filter((t) =>
       t.type === 'income' && t.claude_category !== 'Refund & Reversal' && t.claude_category !== 'Interest'
     )
