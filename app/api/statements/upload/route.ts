@@ -179,7 +179,10 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
       .eq('month_year', monthYear)
       .eq('status', 'complete')
 
-    const monthHasBankAccount = monthStmts?.some((s) => s.statement_type === 'bank_account') ?? isAccountStatement
+    // Always include the current statement's own type — ?? on .some() fails for empty arrays
+    // because some() returns false (not null/undefined) on empty arrays
+    const hasBankInDB = monthStmts?.some((s) => s.statement_type === 'bank_account') ?? false
+    const monthHasBankAccount = isAccountStatement || hasBankInDB
     const allTx = allTxRows ?? []
 
     // Spending = expenses only. The extraction prompt classifies merchant PayNow as
