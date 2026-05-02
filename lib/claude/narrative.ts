@@ -36,49 +36,29 @@ export async function generateReport(params: {
         role: 'user',
         content: `You are a warm, friendly personal finance companion — like a supportive friend who happens to understand money well. You're non-judgmental, encouraging, and direct.
 
-Generate a monthly financial summary report. Return ONLY valid JSON, no markdown, no explanation.
+Generate a monthly financial summary. Return ONLY valid JSON, no markdown, no explanation.
 
 Current month: ${currentMonth.month_year}
-Statement type: ${creditCardOnly ? 'Credit card only — no bank account data uploaded. Income and savings figures are NOT available and must not be mentioned.' : 'Bank account data available — income and savings figures are reliable.'}
-Total spent: SGD ${currentMonth.total_spent.toFixed(2)}
-${creditCardOnly ? '' : `Total income: SGD ${currentMonth.total_saved.toFixed(2)}`}
+Statement type: ${creditCardOnly ? 'Credit card only — no bank account data uploaded. Do NOT mention savings or income.' : 'Bank account — income and savings figures are available.'}
+Total spent (expenses only): SGD ${currentMonth.total_spent.toFixed(2)}
+${creditCardOnly ? '' : `Net saved this month: SGD ${currentMonth.total_saved.toFixed(2)}`}
 Top spending category: ${currentMonth.top_category}
 Category breakdown: ${topCategories}
 ${priorContext}
 ${historyContext}
 
-${creditCardOnly ? 'IMPORTANT: This is a credit card statement only. Do NOT mention savings, income, money earned, or money saved. Focus entirely on spending patterns and categories.' : ''}
-
-Return this exact JSON structure:
+Return this exact JSON:
 {
-  "narrative": "2-3 warm, conversational sentences. Lead with something positive or a genuine observation. If the month was tough, acknowledge it honestly then pivot to something constructive. Never preachy. Sound like a friend, not a bank.${creditCardOnly ? ' Do not mention savings or income.' : ''}",
-  "summaryCards": {
-    "spent": ${currentMonth.total_spent},
-    "saved": ${creditCardOnly ? 0 : currentMonth.total_saved},
-    "top_category": "${currentMonth.top_category || 'Other'}",
-    "watchout": "One short forward-looking note — something to keep an eye on next month. Warm tone, not alarming."
-  },
-  "observations": [
-    {
-      "type": "string — 'new_charge' | 'missing_charge' | 'amount_changed' | 'spending_spike'",
-      "message": "Warm, conversational observation. Like: 'Looks like your Netflix went up by $2 this month.'",
-      "merchant": "merchant name or null",
-      "amount_change": number or null
-    }
-  ],
-  "nudges": [
-    {
-      "message": "One forward-looking nudge. Predictive, not prescriptive. Like: 'Your phone bill usually lands around the 15th — worth keeping some buffer.'",
-      "pattern": "brief description of the pattern spotted or null",
-      "predicted_date": "YYYY-MM-DD or null"
-    }
-  ]
+  "narrative": "2–3 warm sentences. Acknowledge the month honestly — lead with what's notable (good or tough). Never preachy.${creditCardOnly ? ' Do not mention savings or income.' : ''}",
+  "watchout": "One short warm forward-looking note for next month.",
+  "observations": [],
+  "nudges": []
 }
 
 Rules:
-- observations array: only include if you can genuinely identify a pattern from the data. Empty array is fine for first-time users.
-- nudges array: 1-2 items max. Empty array is fine.
-- All money amounts in SGD.
+- Only populate observations if there is a genuine pattern (new charge, changed amount, spike). Empty array is fine.
+- nudges: 1–2 max. Empty array is fine.
+- Do NOT include spent/saved/top_category in your response — those are computed server-side.
 - Return valid JSON only.`,
       },
     ],
@@ -91,7 +71,7 @@ Rules:
 
   let parsed: {
     narrative?: string
-    summaryCards?: SummaryCards
+    watchout?: string
     observations?: Observation[]
     nudges?: Nudge[]
   }
@@ -100,20 +80,22 @@ Rules:
     const text = content.text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
     parsed = JSON.parse(text)
   } catch {
-    // Fallback if JSON parsing fails
     parsed = {}
+  }
+
+  // summaryCards is always computed server-side — never from Claude
+  const summaryCards: SummaryCards = {
+    spent: currentMonth.total_spent,
+    saved: creditCardOnly ? 0 : currentMonth.total_saved,
+    top_category: currentMonth.top_category || 'Other',
+    watchout: parsed.watchout || 'Keep uploading statements to unlock more insights.',
   }
 
   return {
     narrative:
       parsed.narrative ||
       `You spent SGD ${currentMonth.total_spent.toFixed(2)} this month, with most going towards ${currentMonth.top_category || 'everyday expenses'}. Keep uploading statements to unlock month-over-month insights.`,
-    summaryCards: parsed.summaryCards || {
-      spent: currentMonth.total_spent,
-      saved: currentMonth.total_saved,
-      top_category: currentMonth.top_category || 'Other',
-      watchout: 'Upload more statements to unlock insights.',
-    },
+    summaryCards,
     observations: parsed.observations || [],
     nudges: parsed.nudges || [],
   }

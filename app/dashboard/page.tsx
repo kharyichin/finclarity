@@ -89,7 +89,7 @@ export default function DashboardPage() {
   const fetchReport = useCallback(async (m: string) => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/reports?month=${m}`)
+      const res = await fetch(`/api/reports?month=${m}&_t=${Date.now()}`)
       const data = await res.json()
       if (data.empty) {
         setReport(null)
@@ -222,11 +222,12 @@ export default function DashboardPage() {
                       onClick={async () => {
                         setRecalculating(true)
                         try {
-                          await fetch('/api/reports/recalculate', {
+                          const res = await fetch('/api/reports/recalculate', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ month }),
                           })
+                          if (!res.ok) console.error('[recalculate]', await res.json().catch(() => ({})))
                           await fetchReport(month)
                         } finally {
                           setRecalculating(false)
