@@ -22,13 +22,14 @@ type UploadFlow =
   | { stage: 'duplicate' }
   | { stage: 'error'; message: string }
 
-function getCurrentMonth() {
+function getLastMonth() {
   const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const d = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
 export default function BreakdownPage() {
-  const [month, setMonth] = useState(getCurrentMonth)
+  const [month, setMonth] = useState(getLastMonth)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)

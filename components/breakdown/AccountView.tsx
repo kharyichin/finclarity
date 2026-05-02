@@ -51,14 +51,12 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
   const { nicknames, setNickname, getLabel } = useCardNicknames()
   const [editing, setEditing] = useState<string | null>(null)
 
-  const groups = new Map<string, { bankName: string | null; all: Transaction[]; expenses: Transaction[] }>()
+  const groups = new Map<string, { bankName: string | null; all: Transaction[] }>()
 
   for (const tx of transactions) {
     const key = tx.account_last4 ?? 'unknown'
-    if (!groups.has(key)) groups.set(key, { bankName: tx.bank_name, all: [], expenses: [] })
-    const g = groups.get(key)!
-    g.all.push(tx)
-    if (tx.type === 'expense') g.expenses.push(tx)
+    if (!groups.has(key)) groups.set(key, { bankName: tx.bank_name, all: [] })
+    groups.get(key)!.all.push(tx)
   }
 
   if (groups.size === 0) {
@@ -66,35 +64,37 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
   }
 
   const accountTotals = [...groups.entries()]
-    .map(([key, g]) => ({
-      key,
-      bankName: g.bankName,
-      spent: g.expenses.reduce((s, t) => s + (t.sgd_amount ?? t.amount), 0),
-      all: g.all,
-    }))
-    .sort((a, b) => b.spent - a.spent)
+    .map(([key, g]) => {
+      const debits = g.all.filter(t => t.type === 'expense' || t.type === 'transfer')
+        .reduce((s, t) => s + (t.sgd_amount ?? t.amount), 0)
+      const credits = g.all.filter(t => t.type === 'income')
+        .reduce((s, t) => s + (t.sgd_amount ?? t.amount), 0)
+      const hasIncome = g.all.some(t => t.type === 'income')
+      return { key, bankName: g.bankName, debits, credits, hasIncome, all: g.all }
+    })
+    .sort((a, b) => b.debits - a.debits)
 
-  const grandTotal = accountTotals.reduce((s, a) => s + a.spent, 0)
+  const grandDebits = accountTotals.reduce((s, a) => s + a.debits, 0)
 
   return (
     <div className="space-y-6">
       {/* Chart */}
       <div className="rounded-2xl bg-white border border-stone-100 p-4 space-y-3">
-        <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Spending by Card / Account</p>
+        <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Activity by Account</p>
         <div className="flex h-3 rounded-full overflow-hidden gap-0.5">
-          {accountTotals.map(({ key, spent }, i) =>
-            grandTotal > 0 ? (
+          {accountTotals.map(({ key, debits }, i) =>
+            grandDebits > 0 ? (
               <button
                 key={key}
                 onClick={() => document.getElementById(`acct-${key}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 className={`${ACCOUNT_COLOURS[i % ACCOUNT_COLOURS.length]} transition-all hover:opacity-80 cursor-pointer`}
-                style={{ width: `${(spent / grandTotal) * 100}%` }}
+                style={{ width: `${(debits / grandDebits) * 100}%` }}
               />
             ) : null
           )}
         </div>
         <div className="space-y-1.5">
-          {accountTotals.map(({ key, bankName, spent }, i) => (
+          {accountTotals.map(({ key, bankName, debits, credits, hasIncome }, i) => (
             <button
               key={key}
               onClick={() => document.getElementById(`acct-${key}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
@@ -107,8 +107,8 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xs text-stone-400">{grandTotal > 0 ? ((spent / grandTotal) * 100).toFixed(0) : 0}%</span>
-                <span className="text-xs font-semibold text-stone-600 w-28 text-right">{spent.toFixed(2)} SGD</span>
+                {hasIncome && <span className="text-xs text-green-600">+{credits.toFixed(0)} in</span>}
+                <span className="text-xs font-semibold text-stone-600 w-28 text-right">{debits.toFixed(2)} SGD out</span>
               </div>
             </button>
           ))}
@@ -116,7 +116,7 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
       </div>
 
       {/* Per-account lists */}
-      {accountTotals.map(({ key, bankName, spent, all }, i) => {
+      {accountTotals.map(({ key, bankName, debits, credits, hasIncome, all }, i) => {
         const label = getLabel(bankName, key === 'unknown' ? null : key)
         return (
           <div key={key} id={`acct-${key}`}>
@@ -135,14 +135,17 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
                     <button
                       onClick={() => setEditing(key)}
                       className="text-stone-300 hover:text-stone-500 transition text-xs"
-                      title="Edit card name"
+                      title="Edit nickname"
                     >
                       ✏️
                     </button>
                   </>
                 )}
               </div>
-              <span className="text-sm text-stone-500">{spent.toFixed(2)} SGD spent</span>
+              <div className="flex items-center gap-3 text-sm text-stone-500">
+                {hasIncome && <span className="text-green-600">+{credits.toFixed(2)} in</span>}
+                <span>{debits.toFixed(2)} SGD out</span>
+              </div>
             </div>
             <div className={`rounded-2xl border px-4 ${ACCOUNT_LIGHT[i % ACCOUNT_LIGHT.length]}`}>
               {all.map((tx) => <TransactionRow key={tx.id} tx={tx} />)}

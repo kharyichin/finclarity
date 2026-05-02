@@ -44,14 +44,15 @@ function getLastMonth() {
 function getMonthHeading(month: string) {
   if (month === getCurrentMonth()) return 'This Month'
   if (month === getLastMonth()) return 'Last Month'
-  return 'Selected Month'
+  const [y, m] = month.split('-')
+  return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' })
 }
 
 export default function DashboardPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [flow, setFlow] = useState<UploadFlow>({ stage: 'idle' })
   const [showCheckIn, setShowCheckIn] = useState(false)
-  const [month, setMonth] = useState(getCurrentMonth)
+  const [month, setMonth] = useState(getLastMonth)
   const [report, setReport] = useState<MonthlyReport | null>(null)
   const [creditCardOnly, setCreditCardOnly] = useState(false)
   const [hasUploads, setHasUploads] = useState(false)
