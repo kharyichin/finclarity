@@ -137,23 +137,7 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
     )
     const topCategory = getTopCategory(outflows)
 
-    const currentSummary: TransactionSummary = {
-      month_year: monthYear,
-      total_spent: outflows.reduce((sum, t) => sum + t.amount, 0),
-      total_saved: isAccountStatement
-        ? trueIncome.reduce((sum, t) => sum + t.amount, 0) - outflows.reduce((sum, t) => sum + t.amount, 0)
-        : trueIncome.reduce((sum, t) => sum + t.amount, 0),
-      top_category: topCategory,
-      transactions: [],
-    }
-
-    const report = await generateReport({
-      currentMonth: currentSummary,
-      priorMonth: null,
-      last3Months: null,
-      statementType: extracted.statementType,
-    })
-
+    // Insert transactions first
     if (transactions.length > 0) {
       await supabase.from('transactions').insert(
         transactions.map((tx) => ({
@@ -179,6 +163,51 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
         }))
       )
     }
+
+    // Fetch ALL transactions for this month (across all uploaded statements)
+    // so the report always reflects the full combined picture
+    const { data: allTxRows } = await supabase
+      .from('transactions')
+      .select('type, claude_category, sgd_amount, amount')
+      .eq('user_id', stmt.user_id)
+      .eq('month_year', monthYear)
+
+    const { data: monthStmts } = await supabase
+      .from('statements')
+      .select('statement_type')
+      .eq('user_id', stmt.user_id)
+      .eq('month_year', monthYear)
+      .eq('status', 'complete')
+
+    const monthHasBankAccount = monthStmts?.some((s) => s.statement_type === 'bank_account') ?? isAccountStatement
+    const allTx = allTxRows ?? []
+
+    const combinedOutflows = allTx.filter((t) =>
+      t.type === 'expense' || (monthHasBankAccount && t.type === 'transfer')
+    )
+    const combinedIncome = allTx.filter((t) =>
+      t.type === 'income' && t.claude_category !== 'Refund & Reversal' && t.claude_category !== 'Interest'
+    )
+    const combinedTopCategory = getTopCategory(
+      combinedOutflows.map((t) => ({ category: t.claude_category ?? 'Other', amount: t.sgd_amount ?? t.amount }))
+    )
+    const combinedSpent = combinedOutflows.reduce((s, t) => s + (t.sgd_amount ?? t.amount), 0)
+    const combinedIncomeTot = combinedIncome.reduce((s, t) => s + (t.sgd_amount ?? t.amount), 0)
+
+    const currentSummary: TransactionSummary = {
+      month_year: monthYear,
+      total_spent: combinedSpent,
+      total_saved: monthHasBankAccount ? combinedIncomeTot - combinedSpent : combinedIncomeTot,
+      top_category: combinedTopCategory,
+      transactions: [],
+    }
+
+    const report = await generateReport({
+      currentMonth: currentSummary,
+      priorMonth: null,
+      last3Months: null,
+      statementType: monthHasBankAccount ? 'bank_account' : 'credit_card',
+    })
 
     await supabase
       .from('monthly_reports')
