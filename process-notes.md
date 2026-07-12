@@ -308,3 +308,18 @@
 - Item 12: Anonymous upload returns data in memory, never saves to DB
 - Item 13: Account creation converts anonymous session + saves sessionStorage data to DB
 - Item 14: Login page for returning users + sign-in link on demo/sidebar
+
+### Step 16: Conditional insight tiles
+- **What was built:** `components/dashboard/InsightTiles.tsx` — groups expense transactions by card (account_last4 + bank_name), finds the top spender, and renders a compact "Top card" tile only when 2+ distinct cards exist. For anonymous users, reads from `sessionStorage['finclarity_pending_upload'].rawTransactions`; for authenticated users, fetches from `GET /api/transactions?month=...`. Uses `getCardLabel` from `lib/utils/cardNicknames.ts` so user-set nicknames are respected. Wired between `SummaryCards` and `ObservationsPanel` in `app/dashboard/page.tsx`. No tile row shown on demo page (no account breakdown in demo data).
+- **Issues encountered:** None — TypeScript passed clean, no issues.
+
+### Step 17: Monthly budget tracker (revised after initial build)
+- **Initial build:** Single `BudgetBar` component at bottom of dashboard with one overall budget amount.
+- **Revised after learner feedback:** Replaced with per-category budgets on a dedicated `/budget` page. `BudgetBar` redesigned as a compact top-of-dashboard status widget showing total spend vs total budgeted, linking to `/budget` for editing. Sidebar now has a "Budget" nav item. `category_budgets jsonb` column added to users table (PATCH /api/user now accepts it). Number inputs on budget page use `inputMode="numeric"` with no spinners, placeholder of 1,000.
+- **Sidebar fix:** "Create account" button was calling `onUpload` (which opens upload zone — not useful if anonymous user already has pending data). Fixed by adding `onCreateAccount` prop to Sidebar; dashboard passes a smart callback that opens the save-progress form if sessionStorage has pending data, otherwise opens the upload flow.
+- **SQL needed:** `ALTER TABLE public.users ADD COLUMN IF NOT EXISTS category_budgets jsonb DEFAULT '{}'::jsonb;`
+
+### Step 15: Animated spend vs save stat strip
+- Built `components/dashboard/SpendSaveStrip.tsx` — full-width animated bar, amber for spent, green for saved, on a stone-100 track. Savings rate % shown below. Handles credit-card-only case (no savings: full amber bar, "— saved" label). Animation triggered by `useEffect` + `requestAnimationFrame` so it fires reliably on mount.
+- Wired between `NarrativeSummary` and `SummaryCards` in both `app/dashboard/page.tsx` and `app/demo/page.tsx`.
+- TypeScript: no errors.

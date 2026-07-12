@@ -166,6 +166,36 @@ Everything below must be complete and verifiable at the end of 3–4 hours:
 
 ---
 
+## Iteration Backlog
+
+Items flagged during the build or post-submission for future improvement. Organized by area.
+
+### Auth & Data Privacy
+- [ ] **Login for returning users** — users who created an account have no way to sign back in; need a `/login` page and a sign-in link on the demo/landing page *(flagged at Step 10)*
+- [ ] **Anonymous session data wipe on tab close** — change to Option B: process upload in memory only; nothing written to the database until the user creates an account; aligns "save your progress" with reality and strengthens the privacy story *(decided post-submission)*
+
+### Extraction & AI Quality
+- [ ] **OCBC merchant code formatting** — "Other" is the dominant category because OCBC encodes merchant names in a non-human-readable format; extraction prompt needs a dedicated handling pass for OCBC transaction descriptions *(flagged at Steps 5 & 6)*
+- [ ] **Narrative quality** — current output is functional but reads mechanically; prompt needs refinement to produce more natural, insight-driven text *(flagged at Step 5)*
+- [ ] **Card name extraction reliability** — card product name still misses for some statements; nickname editor is a workaround but not a fix *(flagged at Step 8)*
+
+### Dashboard & UX
+- [ ] **Dashboard visual accompaniment** — narrative section is text-only; adding a simple chart or visual element would make the top of the dashboard more engaging
+- [ ] **Upload modal size** — modal is small relative to the drag-and-drop zone; flagged as polish during Step 4
+
+### Notifications & Email
+- [ ] **Resend domain verification** — `from` address uses `finclarity.app` domain; if this domain is not verified in Resend, reminder emails will fail silently; needs end-to-end test with a real check-in day
+- [ ] **Email reminder content** — current email is functional but plain; could benefit from a designed HTML template that matches the app's warm aesthetic
+
+### Larger Features (Phase 2)
+- [ ] **Investment & brokerage account sync** — explicitly scoped as Phase 2; requires a new data model (buy/sell/dividend vs. spend/income) and new extraction logic
+- [ ] **Merchant drill-down** — tap a category → see individual merchants → tap a merchant → see all transactions across months
+- [ ] **In-app streak badges** — milestone celebrations at 3, 6, 12 months
+- [ ] **Wrapped-style PNG export** — Jade's call: too build-heavy for v1; revisit when core is stable
+- [ ] **Social benchmarking** — anonymous demographic comparisons; needs user base first
+
+---
+
 ## Non-Goals
 
 1. **Live bank API / Plaid integration** — legal complexity, MAS licensing risk; statement upload is the v1 mechanism
