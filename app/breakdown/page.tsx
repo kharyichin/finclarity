@@ -223,7 +223,7 @@ export default function BreakdownPage() {
             className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
             onClick={() => { if (flow.stage !== 'processing') closeModal() }}
           />
-          <div className="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-xl p-6">
+          <div className="relative z-10 w-full max-w-lg rounded-2xl bg-white shadow-xl p-6">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-semibold text-stone-800">
                 {flow.stage === 'idle' && 'Upload a statement'}

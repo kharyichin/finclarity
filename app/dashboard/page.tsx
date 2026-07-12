@@ -245,12 +245,12 @@ export default function DashboardPage() {
                     </button>
                     {/* Tooltip */}
                     {!recalculating && (
-                      <div className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <div className="bg-stone-800 text-white text-xs rounded-xl px-3 py-2 whitespace-nowrap shadow-xl text-center">
+                      <div className="pointer-events-none absolute top-full left-0 mt-2 z-50 w-56 max-w-[calc(100vw-2rem)] opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <div className="w-2.5 h-2.5 bg-stone-800 rotate-45 ml-3 rounded-sm" />
+                        <div className="bg-stone-800 text-white text-xs rounded-xl px-3 py-2 shadow-xl -mt-1.5">
                           <span className="block font-medium mb-0.5">Refresh AI report</span>
                           <span className="text-white/70">Regenerates narrative and figures from your uploaded transactions</span>
                         </div>
-                        <div className="w-2.5 h-2.5 bg-stone-800 rotate-45 mx-auto -mt-1.5 rounded-sm" />
                       </div>
                     )}
                   </div>
@@ -329,7 +329,7 @@ export default function DashboardPage() {
               if (flow.stage !== 'processing') closeModal()
             }}
           />
-          <div className="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-xl p-6">
+          <div className="relative z-10 w-full max-w-lg rounded-2xl bg-white shadow-xl p-6">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-semibold text-stone-800">
                 {flow.stage === 'idle' && 'Upload a statement'}

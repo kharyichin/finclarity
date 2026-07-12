@@ -129,12 +129,12 @@ export function CategoryView({
                     {/* Badge */}
                     <span className="relative inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-black leading-none">!</span>
                     {/* Tooltip */}
-                    <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <span className="block bg-stone-800 text-white text-xs font-medium rounded-xl px-4 py-2.5 whitespace-nowrap shadow-xl">
+                    <span className="pointer-events-none absolute bottom-full left-0 mb-3 z-50 w-56 max-w-[calc(100vw-2rem)] opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <span className="block bg-stone-800 text-white text-xs font-medium rounded-xl px-4 py-2.5 shadow-xl">
                         <span className="block text-amber-300 font-semibold mb-0.5">Over budget</span>
                         SGD {overAmt.toLocaleString('en-SG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} more than planned
                       </span>
-                      <span className="block w-2.5 h-2.5 bg-stone-800 rotate-45 mx-auto -mt-1.5 rounded-sm" />
+                      <span className="block w-2.5 h-2.5 bg-stone-800 rotate-45 -mt-1.5 ml-1.5 rounded-sm" />
                     </span>
                   </span>
                 )}

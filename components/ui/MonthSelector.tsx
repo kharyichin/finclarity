@@ -82,7 +82,7 @@ export function MonthSelector({ value, onChange }: MonthSelectorProps) {
       </div>
 
       {open && (
-        <div className="absolute right-0 top-10 z-50 bg-white rounded-2xl shadow-lg border border-stone-100 p-4 w-72">
+        <div className="absolute right-0 top-10 z-50 bg-white rounded-2xl shadow-lg border border-stone-100 p-4 w-72 max-w-[calc(100vw-2rem)]">
           {years.map((y) => (
             <div key={y} className="mb-3 last:mb-0">
               <p className="text-xs font-semibold text-stone-400 mb-2">{y}</p>
