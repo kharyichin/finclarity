@@ -51,7 +51,7 @@ Fixture notes (redacted patterns only): `docs/fixtures/t1-statement-patterns.md`
   - Tooltips: quieter (fewer steps or dismiss-friendlier).
   - Keep path to upload obvious.
 
-- [ ] **U2. Chrome consistency (light pass only)**
+- [x] **U2. Chrome consistency (light pass only)**
   - Spacing, type, primary buttons on demo + dashboard shell.
   - No full redesign / no new design system.
 
@@ -74,21 +74,21 @@ Fixture notes (redacted patterns only): `docs/fixtures/t1-statement-patterns.md`
 
 ### Week 1 definition of done
 
-- [ ] `/` is a marketing landing with CTA to `/demo`
-- [ ] Demo feels calmer and still converts to upload
+- [x] `/` is a marketing landing with CTA to `/demo`
+- [x] Demo feels calmer and still converts to upload
 - [ ] OCBC-style consolidated CC text extracts cleaner merchants than before (spot-check)
-- [ ] Error paths don’t feel broken
+- [x] Error paths don’t feel broken
 
 ---
 
 ## Week 2 — Feel finished for soft users
 
-- [ ] **P4. T2 prompt extensions** — StanChart, HSBC, Maybank, CIMB
+- [x] **P4. T2 prompt extensions** — StanChart, HSBC, Maybank, CIMB
 - [ ] **P5. Low-confidence / Other review** — minimal UI to fix bad categories
-- [ ] **P6. Narrative prompt pass** — less mechanical, more “what changed”
-- [ ] **U3. Dashboard top visual** — simple chart beside narrative
-- [ ] **U4. Landing mobile + bank row polish**
-- [ ] **P7. FX disclaimer one-liner** (copy already decided in spec)
+- [x] **P6. Narrative prompt pass** — less mechanical, more “what changed”
+- [x] **U3. Dashboard top visual** — simple chart beside narrative
+- [x] **U4. Landing mobile + bank row polish**
+- [x] **P7. FX disclaimer one-liner** (copy already decided in spec)
 - [ ] **D1. Resend domain + reminder email smoke test** (only if using check-ins)
 
 ### Week 2 stretch (only if ahead)
@@ -124,3 +124,6 @@ Fixture notes (redacted patterns only): `docs/fixtures/t1-statement-patterns.md`
 |------|------|------------|
 | 2026-07-21 | L1–L3 landing + P2 fixtures + U1 demo polish | PR #1 |
 | 2026-07-21 | P3 calm upload errors | PR #1 |
+
+| 2026-07-22 | PR #1 merged to main | 88cea1d |
+| 2026-07-22 | Week 2: U2, U3, U4, P6, P7 | PR #2 |

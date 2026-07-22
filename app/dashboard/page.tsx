@@ -8,6 +8,7 @@ import { ProcessingState } from '@/components/upload/ProcessingState'
 import { SuccessState } from '@/components/upload/SuccessState'
 import { ErrorState } from '@/components/upload/ErrorState'
 import { NarrativeSummary } from '@/components/dashboard/NarrativeSummary'
+import { MonthMixVisual } from '@/components/dashboard/MonthMixVisual'
 import { SpendSaveStrip } from '@/components/dashboard/SpendSaveStrip'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { ObservationsPanel } from '@/components/dashboard/ObservationsPanel'
@@ -285,6 +286,13 @@ export default function DashboardPage() {
                         })()
                       : null
                   }
+                />
+
+                <MonthMixVisual
+                  spent={displayReport?.summary_cards_json?.spent}
+                  saved={displayReport?.summary_cards_json?.saved}
+                  topCategory={displayReport?.summary_cards_json?.top_category}
+                  creditCardOnly={creditCardOnly}
                 />
 
                 <SpendSaveStrip

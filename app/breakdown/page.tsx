@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
+import { FxDisclaimer } from '@/components/ui/FxDisclaimer'
 import { MonthSelector } from '@/components/ui/MonthSelector'
 import { BreakdownTabs } from '@/components/breakdown/BreakdownTabs'
 import { UploadZone } from '@/components/upload/UploadZone'
@@ -169,6 +170,8 @@ export default function BreakdownPage() {
 
         <main className="flex-1 overflow-y-auto px-6 py-8">
           <div className="max-w-2xl mx-auto space-y-5">
+            <FxDisclaimer />
+
             <div className="flex items-center justify-between">
               <h1 className="text-lg font-semibold text-stone-800">Spending Breakdown</h1>
               <MonthSelector value={month} onChange={setMonth} />

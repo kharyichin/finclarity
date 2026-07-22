@@ -13,7 +13,7 @@ export interface ExtractResult {
   detectedCurrency: string
 }
 
-const PROMPT_VERSION = '1.0'
+const PROMPT_VERSION = '1.1'
 export { PROMPT_VERSION as EXTRACT_PROMPT_VERSION }
 
 export async function extractTransactions(rawText: string): Promise<ExtractResult> {
@@ -37,7 +37,7 @@ IMPORTANT — DO NOT extract or include anywhere in your response:
 
 Return ONLY a valid JSON object with this exact structure:
 {
-  "bankName": "string — bank name only, e.g. 'OCBC', 'DBS', 'UOB', 'Citibank', 'Standard Chartered'",
+  "bankName": "string — bank name only, e.g. 'OCBC', 'DBS', 'UOB', 'Standard Chartered', 'HSBC', 'Maybank', 'CIMB', 'Trust', 'GXS', 'YouTrip', 'Revolut', 'Citibank'",
   "cardName": "string or null — the card product name found anywhere in the statement. Common OCBC cards: '90N' (also written '90°N'), 'Infinity Cashback', '365', 'Frank', 'Titanium Rewards'. Common DBS: 'Live Fresh', 'Altitude', 'Multiplier'. Common UOB: 'One', 'Absolute', 'Lady's'. Common Citi: 'PremierMiles', 'Cashback', 'Rewards'. Return just the short product name (e.g. '90N', 'Infinity Cashback', 'Live Fresh'). null only if truly absent.",
   "statementType": "credit_card" or "bank_account",
   "accountLast4": "string — last 4 digits of the account or card number",
@@ -76,6 +76,8 @@ Rules:
 - If a field is not present in the statement, use null.
 - FOREIGN CURRENCY: OCBC and other Singapore banks show foreign transactions with the SGD charge on the transaction line, followed by a line "FOREIGN CURRENCY [CODE] [AMOUNT]" — where [CODE] is ANY ISO 4217 currency code (USD, SEK, EUR, GBP, MYR, AUD, JPY, HKD, CNY, DKK, NOK, CHF, etc.). When you see this pattern for ANY currency code, set currency to that code, originalAmount to that foreign value, and amount to the SGD charge on the transaction line above. Do not limit this only to USD — apply it to every currency code you encounter. Other banks may show it inline (e.g. "SEK 89.00 / 11.20 SGD"). Never default to SGD when a foreign currency line is present.
 - CARD NAME: Scan the entire statement for the card product name — it may appear in the header, title, footer, or account summary. For OCBC: look for "90°N", "90N", "Infinity Cashback", "365", "Frank". For DBS: "Live Fresh", "Altitude". For UOB: "One Card". Extract only the short product name into cardName (e.g. "90N", "Infinity Cashback"). This field is critical — do not return null unless the product name is genuinely absent from the entire document.
+- T2 BANKS (Standard Chartered, HSBC, Maybank, CIMB): skip long T&Cs / abbreviation guides / tax invoice boilerplate; extract only the transaction table region. StanChart savings often labels credits/debits in separate columns — map correctly to income vs expense.
+- OCBC multi-card consolidated: separate card blocks (e.g. 90.N, Infinity Cashback); strip internal merchant codes glued after amounts (e.g. 11.98-2794 MERCHANT → merchant without the -2794 code); normalize GRAB* and WWW .TADA.G* brands; treat CCY CONVERSION FEE as Fees/Other expense; PAYMENT lines are transfers not income.
 - Return valid JSON only. No explanation, no markdown, no code fences.
 
 Statement text:

@@ -28,29 +28,34 @@ export async function generateReport(params: {
 
   const topCategories = getTopCategories(currentMonth)
 
+  const deltaHint = priorMonth
+    ? `Month-over-month change in spend: SGD ${(currentMonth.total_spent - priorMonth.total_spent).toFixed(2)} (${currentMonth.total_spent >= priorMonth.total_spent ? 'up' : 'down'} vs prior).`
+    : 'First month in view — describe the shape of spending, not a comparison.'
+
   const message = await client.messages.create({
     model: 'claude-haiku-4-5',
     max_tokens: 1024,
     messages: [
       {
         role: 'user',
-        content: `You are a warm, friendly personal finance companion — like a supportive friend who happens to understand money well. You're non-judgmental, encouraging, and direct.
+        content: `You write short monthly money notes for Singapore users. Tone: calm friend who understands money — warm, direct, never preachy, never corporate, never "AI assistant".
 
-Generate a monthly financial summary. Return ONLY valid JSON, no markdown, no explanation.
+Write a monthly picture. Return ONLY valid JSON (no markdown, no fences).
 
 Current month: ${currentMonth.month_year}
-Statement type: ${creditCardOnly ? 'Credit card only — no bank account data uploaded. Do NOT mention savings or income.' : 'Bank account — income and savings figures are available.'}
+Statement type: ${creditCardOnly ? 'Credit card only — no bank account data. Do NOT mention savings or income.' : 'Bank account — income and savings figures are available.'}
 Total spent (expenses only): SGD ${currentMonth.total_spent.toFixed(2)}
 ${creditCardOnly ? '' : `Net saved this month: SGD ${currentMonth.total_saved.toFixed(2)}`}
 Top spending category: ${currentMonth.top_category}
 Category breakdown: ${topCategories}
 ${priorContext}
 ${historyContext}
+${deltaHint}
 
-Return this exact JSON:
+Return this exact JSON shape:
 {
-  "narrative": "2–3 warm sentences. Acknowledge the month honestly — lead with what's notable (good or tough). Never preachy.${creditCardOnly ? ' Do not mention savings or income.' : ''}",
-  "watchout": "One short warm forward-looking note for next month.",
+  "narrative": "2–3 sentences. Lead with what changed or what stands out this month (good or hard). Prefer concrete category or habit language over repeating raw totals. If prior month exists, say what moved and why it might have. Never lecture. Never start with 'This month you...' every time — vary openings.${creditCardOnly ? ' Do not mention savings or income.' : ''}",
+  "watchout": "One short warm forward-looking note for next month — specific if you can, otherwise a gentle practical tip.",
   "observations": [],
   "nudges": []
 }
@@ -58,7 +63,8 @@ Return this exact JSON:
 Rules:
 - Only populate observations if there is a genuine pattern (new charge, changed amount, spike). Empty array is fine.
 - nudges: 1–2 max. Empty array is fine.
-- Do NOT include spent/saved/top_category in your response — those are computed server-side.
+- Do NOT include spent/saved/top_category fields — those are computed server-side.
+- No exclamation spam. No emoji. No financial advice.
 - Return valid JSON only.`,
       },
     ],
@@ -83,7 +89,6 @@ Rules:
     parsed = {}
   }
 
-  // summaryCards is always computed server-side — never from Claude
   const summaryCards: SummaryCards = {
     spent: currentMonth.total_spent,
     saved: creditCardOnly ? 0 : currentMonth.total_saved,
