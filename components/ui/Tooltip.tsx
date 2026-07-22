@@ -14,23 +14,24 @@ export function Tooltip({ children, message, step }: TooltipProps) {
   if (!visible) return <>{children}</>
 
   return (
-    <div className="flex flex-col gap-1">
-      <button
-        onClick={() => setVisible(false)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500 text-white text-sm text-left w-fit hover:bg-blue-600 transition shadow-sm"
-      >
+    <div className="flex flex-col gap-2">
+      <div className="flex items-start gap-3 rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-left shadow-sm shadow-stone-200/50">
         {step !== undefined && (
-          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-white text-blue-500 text-xs font-bold shrink-0">
+          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-stone-800 text-[10px] font-semibold text-white">
             {step}
           </span>
         )}
-        <span>{message}</span>
-        <span className="text-blue-200 text-xs ml-1">✕</span>
-      </button>
-      <span className="text-blue-400 text-xs pl-3">↓</span>
-      <div className="rounded-2xl ring-1 ring-blue-300 ring-offset-1">
-        {children}
+        <p className="flex-1 text-sm leading-relaxed text-stone-600">{message}</p>
+        <button
+          type="button"
+          onClick={() => setVisible(false)}
+          className="shrink-0 rounded-md px-1.5 py-0.5 text-xs text-stone-400 transition hover:bg-stone-200/70 hover:text-stone-700"
+          aria-label="Dismiss tip"
+        >
+          Got it
+        </button>
       </div>
+      <div>{children}</div>
     </div>
   )
 }

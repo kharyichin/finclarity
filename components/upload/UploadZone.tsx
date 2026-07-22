@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useCallback } from 'react'
+import { friendlyUploadError } from '@/lib/utils/upload-errors'
 
 interface Props {
   onStatementCreated: (statementId: string, file: File) => void
@@ -55,7 +56,7 @@ export function UploadZone({
 
   // ── Single-file path (unchanged behaviour) ─────────────────────────────
   async function handleSingleFile(file: File) {
-    if (!file.name.toLowerCase().endsWith('.pdf')) { onError('Please upload a PDF file.'); return }
+    if (!file.name.toLowerCase().endsWith('.pdf')) { onError(friendlyUploadError('Please upload a PDF file.')); return }
     setIsUploading(true)
     try {
       const fd = new FormData()
@@ -63,11 +64,11 @@ export function UploadZone({
       const res = await fetch('/api/statements/upload', { method: 'POST', body: fd })
       const data = await res.json()
       if (data.duplicate) { onDuplicate(); return }
-      if (data.error) { onError(data.error); return }
+      if (data.error) { onError(friendlyUploadError(data.error)); return }
       if (data.anonymous) { sessionStorage.setItem('finclarity_pending_upload', JSON.stringify(data)); onAnonymousSuccess?.(); return }
       if (data.needsPassword) { onNeedsPasswordAnonymous?.(file); return }
       onStatementCreated(data.statement_id, file)
-    } catch { onError('Upload failed. Please check your connection and try again.') }
+    } catch { onError(friendlyUploadError('Upload failed. Please check your connection and try again.')) }
     finally { setIsUploading(false) }
   }
 
@@ -79,7 +80,7 @@ export function UploadZone({
   async function processQueueItem(index: number, items: FileItem[]) {
     const item = items[index]
     if (!item.file.name.toLowerCase().endsWith('.pdf')) {
-      updateItem(index, { status: 'error', errorMsg: 'Not a PDF' })
+      updateItem(index, { status: 'error', errorMsg: friendlyUploadError('Not a PDF') })
       return
     }
 
@@ -91,7 +92,7 @@ export function UploadZone({
       const data = await res.json()
 
       if (data.duplicate) { updateItem(index, { status: 'duplicate' }); return }
-      if (data.error) { updateItem(index, { status: 'error', errorMsg: data.error }); return }
+      if (data.error) { updateItem(index, { status: 'error', errorMsg: friendlyUploadError(data.error) }); return }
 
       const statementId: string = data.statement_id
       updateItem(index, { status: 'processing', statementId })
@@ -111,14 +112,14 @@ export function UploadZone({
         fd2.append('password', password)
         const res2 = await fetch('/api/statements/upload', { method: 'POST', body: fd2 })
         const data2 = await res2.json()
-        if (data2.error) { updateItem(index, { status: 'error', errorMsg: data2.error }); return }
+        if (data2.error) { updateItem(index, { status: 'error', errorMsg: friendlyUploadError(data2.error) }); return }
         updateItem(index, { status: 'processing', statementId: data2.statement_id ?? statementId })
         result = await pollStatement(data2.statement_id ?? statementId)
       }
 
-      updateItem(index, { status: result === 'complete' ? 'done' : 'error', errorMsg: result === 'failed' ? 'Processing failed' : undefined })
+      updateItem(index, { status: result === 'complete' ? 'done' : 'error', errorMsg: result === 'failed' ? friendlyUploadError('Processing failed') : undefined })
     } catch {
-      updateItem(index, { status: 'error', errorMsg: 'Upload failed' })
+      updateItem(index, { status: 'error', errorMsg: friendlyUploadError('Upload failed') })
     }
   }
 
