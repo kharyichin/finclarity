@@ -68,7 +68,7 @@ Fixture notes (redacted patterns only): `docs/fixtures/t1-statement-patterns.md`
   - Keep redacted pattern notes in `docs/fixtures/` (no real PDFs, no PII in git).
   - List expected merchants/categories for the known OCBC Apr-26 style statement.
 
-- [ ] **P3. Upload error states**
+- [x] **P3. Upload error states**
   - Calm copy for: bad/non-PDF, wrong password, timeout, extraction failure.
   - No stack traces in UI.
 
@@ -123,3 +123,4 @@ Fixture notes (redacted patterns only): `docs/fixtures/t1-statement-patterns.md`
 | Date | Item | PR / notes |
 |------|------|------------|
 | 2026-07-21 | L1–L3 landing + P2 fixtures + U1 demo polish | PR #1 |
+| 2026-07-21 | P3 calm upload errors | PR #1 |

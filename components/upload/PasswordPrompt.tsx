@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { friendlyUploadError } from '@/lib/utils/upload-errors'
 
 interface Props {
   statementId?: string
@@ -29,7 +30,7 @@ export function PasswordPrompt({ statementId, file, onStatementReady, onAnonymou
       const data = await res.json()
 
       if (data.error) {
-        onError(data.error)
+        onError(friendlyUploadError(data.error))
         return
       }
       // Anonymous path: pipeline ran in memory
@@ -40,7 +41,7 @@ export function PasswordPrompt({ statementId, file, onStatementReady, onAnonymou
       }
       onStatementReady?.(data.statement_id)
     } catch {
-      onError('Something went wrong. Please try again.')
+      onError(friendlyUploadError('Something went wrong. Please try again.'))
     } finally {
       setIsSubmitting(false)
     }
