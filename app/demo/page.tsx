@@ -68,7 +68,6 @@ export default function DemoPage() {
     setFlow({ stage: 'needs_password_anonymous', file })
   }, [])
 
-  // Authenticated user uploading from demo — just redirect to dashboard
   const onStatementCreated = useCallback(() => {
     router.push('/dashboard')
   }, [router])
@@ -77,23 +76,33 @@ export default function DemoPage() {
     <div className="flex h-screen bg-stone-50">
       <Sidebar />
 
-      <div className="flex flex-col flex-1 min-w-0">
-        <TopBar />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TopBar onUpload={openUpload} />
 
         <main className="flex-1 overflow-y-auto px-6 py-8">
-          <div className="max-w-2xl mx-auto space-y-5">
-
-            {/* Demo ticker */}
-            <div className="overflow-hidden rounded-xl bg-stone-100 py-2">
-              <div
-                className="flex whitespace-nowrap text-xs text-stone-400"
-                style={{ animation: 'ticker 18s linear infinite' }}
-              >
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <span key={i} className="px-8">
-                    🌿 This is a sample — upload a statement to see your real picture.
-                  </span>
-                ))}
+          <div className="mx-auto max-w-2xl space-y-5">
+            {/* Quiet sample banner */}
+            <div className="flex flex-col gap-3 rounded-xl border border-stone-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-stone-800">Sample month</p>
+                <p className="mt-0.5 text-sm text-stone-500">
+                  Explore the product with demo data. Upload when you want your real picture.
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-3">
+                <Link
+                  href="/"
+                  className="text-sm text-stone-500 underline-offset-2 transition hover:text-stone-800 hover:underline"
+                >
+                  About
+                </Link>
+                <button
+                  type="button"
+                  onClick={openUpload}
+                  className="rounded-lg bg-stone-900 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+                >
+                  Upload statement
+                </button>
               </div>
             </div>
 
@@ -103,15 +112,17 @@ export default function DemoPage() {
                 <span className="text-sm text-stone-400">April 2026</span>
                 <Link
                   href="/login"
-                  className="text-sm text-stone-500 hover:text-stone-800 underline underline-offset-2 transition"
+                  className="text-sm text-stone-500 underline underline-offset-2 transition hover:text-stone-800"
                 >
                   Sign in
                 </Link>
               </div>
             </div>
 
-            {/* Narrative with tooltip */}
-            <Tooltip step={1} message="This is your monthly summary — a plain-language snapshot of where your money went and how you're tracking.">
+            <Tooltip
+              step={1}
+              message="Your monthly summary — a plain-language snapshot of where money went."
+            >
               <NarrativeSummary
                 narrative={DEMO_NARRATIVE}
                 hasUploads={true}
@@ -121,42 +132,40 @@ export default function DemoPage() {
 
             <SpendSaveStrip data={DEMO_CARDS} />
 
-            {/* Summary cards with tooltip */}
-            <Tooltip step={2} message="Four cards that tell you the most important numbers at a glance — what you spent, what you saved, your biggest category, and one thing to watch.">
+            <Tooltip
+              step={2}
+              message="Key numbers at a glance: spent, saved, top category, and one thing to watch."
+            >
               <SummaryCards data={DEMO_CARDS} hasComparison={false} />
             </Tooltip>
 
             <NudgesSection nudges={DEMO_NUDGES} />
 
-            {/* Upload CTA with tooltip */}
-            <Tooltip step={3} message="When you're ready, upload a real bank statement — PDF from your bank app works perfectly. Your password is never stored.">
-              <div className="rounded-2xl border border-green-200 bg-gradient-to-br from-green-50 to-stone-50 p-6 text-center">
-                <p className="text-2xl mb-2">🌿</p>
-                <p className="text-sm text-stone-600 mb-4 leading-relaxed">
-                  This is a demo. Your real picture is one upload away.
-                </p>
-                <button
-                  onClick={openUpload}
-                  className="inline-block rounded-xl bg-green-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-green-700 transition"
-                >
-                  Upload my first statement
-                </button>
-              </div>
-            </Tooltip>
-
+            <div className="rounded-2xl border border-stone-200 bg-white p-6 text-center shadow-sm shadow-stone-200/40">
+              <p className="text-sm font-medium text-stone-800">Ready for your numbers?</p>
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-stone-500">
+                Upload a bank PDF. If it is password-protected, you enter the password once — it is never stored.
+              </p>
+              <button
+                type="button"
+                onClick={openUpload}
+                className="mt-5 inline-block rounded-xl bg-green-700 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-green-800"
+              >
+                Upload my first statement
+              </button>
+            </div>
           </div>
         </main>
       </div>
 
-      {/* Upload modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
             onClick={closeModal}
           />
-          <div className="relative z-10 w-full max-w-lg rounded-2xl bg-white shadow-xl p-6">
-            <div className="flex items-center justify-between mb-5">
+          <div className="relative z-10 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-5 flex items-center justify-between">
               <h3 className="font-semibold text-stone-800">
                 {flow.stage === 'idle' && 'Upload a statement'}
                 {flow.stage === 'needs_password_anonymous' && 'Password required'}
@@ -164,8 +173,9 @@ export default function DemoPage() {
                 {flow.stage === 'error' && 'Something went wrong'}
               </h3>
               <button
+                type="button"
                 onClick={closeModal}
-                className="text-stone-400 hover:text-stone-600 text-xl leading-none"
+                className="text-xl leading-none text-stone-400 hover:text-stone-600"
                 aria-label="Close"
               >
                 ×

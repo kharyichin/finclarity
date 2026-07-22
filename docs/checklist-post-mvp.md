@@ -29,24 +29,24 @@ Fixture notes (redacted patterns only): `docs/fixtures/t1-statement-patterns.md`
 
 ### Landing (L)
 
-- [ ] **L1. Marketing landing page**
+- [x] **L1. Marketing landing page**
   - Build a real intro page (not the demo dashboard).
   - Sections: hero, how it works (3 steps), what you get, works-with (tiered banks), privacy, final CTA.
   - Visual language: lots of whitespace, short copy, product-feeling — not generic AI SaaS.
 
-- [ ] **L2. Root routing**
+- [x] **L2. Root routing**
   - Guests hitting `/` see the landing.
   - Signed-in users with completed statements still go to `/dashboard`.
   - Optional: signed-in with no statements → landing or demo (pick one; default landing with CTA).
 
-- [ ] **L3. Landing CTAs**
+- [x] **L3. Landing CTAs**
   - Primary: **Try the demo** → `/demo`
   - Secondary: **Sign in** → `/login`
   - Optional tertiary: jump straight into upload (can open demo + upload modal later)
 
 ### UX polish (U)
 
-- [ ] **U1. Demo entry polish**
+- [x] **U1. Demo entry polish**
   - Clear “this is sample data” without noisy ticker spam.
   - Tooltips: quieter (fewer steps or dismiss-friendlier).
   - Keep path to upload obvious.
@@ -64,7 +64,7 @@ Fixture notes (redacted patterns only): `docs/fixtures/t1-statement-patterns.md`
   - Bump `EXTRACT_PROMPT_VERSION` when prompt changes.
   - **Credit note:** If prompt iteration + live API loops exceed ~1k credits, hand P1 to local Claude terminal; leave partial files committed.
 
-- [ ] **P2. T1 fixture documentation**
+- [x] **P2. T1 fixture documentation**
   - Keep redacted pattern notes in `docs/fixtures/` (no real PDFs, no PII in git).
   - List expected merchants/categories for the known OCBC Apr-26 style statement.
 
@@ -122,4 +122,4 @@ Fixture notes (redacted patterns only): `docs/fixtures/t1-statement-patterns.md`
 
 | Date | Item | PR / notes |
 |------|------|------------|
-| 2026-07-21 | Checklist + fixture notes + landing (L1–L3) started | |
+| 2026-07-21 | L1–L3 landing + P2 fixtures + U1 demo polish | PR #1 |
