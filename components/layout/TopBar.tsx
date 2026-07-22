@@ -8,16 +8,17 @@ interface TopBarProps {
 
 export function TopBar({ onUpload }: TopBarProps) {
   return (
-    <header className="h-14 border-b border-stone-200 bg-white flex items-center justify-between px-6 gap-4">
-      <span className="font-semibold text-stone-800 text-sm">FinClarity</span>
-      <div className="flex items-center gap-4">
+    <header className="flex h-14 items-center justify-between gap-4 border-b border-stone-200 bg-white px-6">
+      <span className="text-sm font-semibold tracking-tight text-stone-900">FinClarity</span>
+      <div className="flex items-center gap-3">
         <StreakCounter />
         {onUpload && (
           <button
+            type="button"
             onClick={onUpload}
-            className="rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition"
+            className="rounded-xl bg-stone-900 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
           >
-            + Upload statement
+            Upload statement
           </button>
         )}
       </div>

@@ -53,7 +53,7 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-stone-50 text-stone-800">
       <header className="border-b border-stone-200/80 bg-stone-50/90 backdrop-blur-sm sticky top-0 z-20">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link href="/" className="text-sm font-semibold tracking-tight text-stone-900">
             FinClarity
           </Link>
@@ -76,7 +76,7 @@ export function LandingPage() {
 
       <main>
         {/* Hero */}
-        <section className="mx-auto max-w-5xl px-6 pb-20 pt-16 sm:pb-28 sm:pt-24">
+        <section className="mx-auto max-w-5xl px-4 pb-16 pt-12 sm:px-6 sm:pb-28 sm:pt-24">
           <p className="mb-4 text-sm font-medium text-green-800/80">Singapore-first · Statement upload</p>
           <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-stone-900 sm:text-5xl sm:leading-[1.1]">
             Your money is somewhere.

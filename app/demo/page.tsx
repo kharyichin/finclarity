@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { NarrativeSummary } from '@/components/dashboard/NarrativeSummary'
+import { MonthMixVisual } from '@/components/dashboard/MonthMixVisual'
 import { SpendSaveStrip } from '@/components/dashboard/SpendSaveStrip'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { NudgesSection } from '@/components/dashboard/NudgesSection'
@@ -129,6 +130,12 @@ export default function DemoPage() {
                 onUpload={openUpload}
               />
             </Tooltip>
+
+            <MonthMixVisual
+              spent={DEMO_CARDS.spent}
+              saved={DEMO_CARDS.saved}
+              topCategory={DEMO_CARDS.top_category}
+            />
 
             <SpendSaveStrip data={DEMO_CARDS} />
 
