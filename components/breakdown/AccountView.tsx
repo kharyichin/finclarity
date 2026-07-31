@@ -47,7 +47,13 @@ function NicknameEditor({
   )
 }
 
-export function AccountView({ transactions }: { transactions: Transaction[] }) {
+export function AccountView({
+  transactions,
+  onCategoryChange,
+}: {
+  transactions: Transaction[]
+  onCategoryChange?: (txId: string, category: string) => void | Promise<void>
+}) {
   const { nicknames, setNickname, getLabel } = useCardNicknames()
   const [editing, setEditing] = useState<string | null>(null)
 
@@ -148,7 +154,9 @@ export function AccountView({ transactions }: { transactions: Transaction[] }) {
               </div>
             </div>
             <div className={`rounded-2xl border px-4 ${ACCOUNT_LIGHT[i % ACCOUNT_LIGHT.length]}`}>
-              {all.map((tx) => <TransactionRow key={tx.id} tx={tx} />)}
+              {all.map((tx) => (
+                <TransactionRow key={tx.id} tx={tx} onCategoryChange={onCategoryChange} />
+              ))}
             </div>
           </div>
         )

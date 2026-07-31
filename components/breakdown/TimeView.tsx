@@ -4,7 +4,15 @@ import { getCalendarWeeks } from '@/lib/utils/dates'
 import { TransactionRow } from '@/components/transactions/TransactionRow'
 import type { Transaction } from '@/types'
 
-export function TimeView({ transactions, month }: { transactions: Transaction[]; month: string }) {
+export function TimeView({
+  transactions,
+  month,
+  onCategoryChange,
+}: {
+  transactions: Transaction[]
+  month: string
+  onCategoryChange?: (txId: string, category: string) => void | Promise<void>
+}) {
   const weeks = getCalendarWeeks(month)
 
   const buckets = weeks.map((week) => {
@@ -71,7 +79,7 @@ export function TimeView({ transactions, month }: { transactions: Transaction[];
             <span className="text-sm text-stone-500">{spent.toFixed(2)} SGD spent</span>
           </div>
           <div className="rounded-2xl bg-white border border-stone-100 px-4">
-            {txs.map((tx) => <TransactionRow key={tx.id} tx={tx} />)}
+            {txs.map((tx) => <TransactionRow key={tx.id} tx={tx} onCategoryChange={onCategoryChange} />)}
           </div>
         </div>
       ))}

@@ -84,7 +84,7 @@ Fixture notes (redacted patterns only): `docs/fixtures/t1-statement-patterns.md`
 ## Week 2 — Feel finished for soft users
 
 - [x] **P4. T2 prompt extensions** — StanChart, HSBC, Maybank, CIMB
-- [ ] **P5. Low-confidence / Other review** — minimal UI to fix bad categories
+- [x] **P5. Low-confidence / Other review** — minimal UI to fix bad categories
 - [x] **P6. Narrative prompt pass** — less mechanical, more “what changed”
 - [x] **U3. Dashboard top visual** — simple chart beside narrative
 - [x] **U4. Landing mobile + bank row polish**
@@ -127,3 +127,5 @@ Fixture notes (redacted patterns only): `docs/fixtures/t1-statement-patterns.md`
 
 | 2026-07-22 | PR #1 merged to main | 88cea1d |
 | 2026-07-22 | Week 2: U2, U3, U4, P6, P7 | PR #2 |
+| 2026-07-22 | PR #2 merged | b8af3f09 |
+| 2026-07-22 | P5 category review UI | PR #3 |
