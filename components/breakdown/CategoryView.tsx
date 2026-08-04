@@ -41,9 +41,11 @@ function slug(s: string) {
 export function CategoryView({
   transactions,
   categoryBudgets = {},
+  onCategoryChange,
 }: {
   transactions: Transaction[]
   categoryBudgets?: Record<string, number>
+  onCategoryChange?: (txId: string, category: string) => void | Promise<void>
 }) {
   const groups = new Map<string, Transaction[]>()
 
@@ -142,7 +144,9 @@ export function CategoryView({
               <span className="text-sm font-medium text-stone-600">{total.toFixed(2)} SGD</span>
             </div>
             <div className={`rounded-2xl border px-4 ${CATEGORY_LIGHT[i % CATEGORY_LIGHT.length]}`}>
-              {txs.map((tx) => <TransactionRow key={tx.id} tx={tx} />)}
+              {txs.map((tx) => (
+                <TransactionRow key={tx.id} tx={tx} onCategoryChange={onCategoryChange} />
+              ))}
             </div>
           </div>
         )

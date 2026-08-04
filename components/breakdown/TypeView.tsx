@@ -9,7 +9,13 @@ const typeLabels: Record<string, string> = {
   transfer: 'Transfers',
 }
 
-export function TypeView({ transactions }: { transactions: Transaction[] }) {
+export function TypeView({
+  transactions,
+  onCategoryChange,
+}: {
+  transactions: Transaction[]
+  onCategoryChange?: (txId: string, category: string) => void | Promise<void>
+}) {
   const income = transactions.filter((t) => t.type === 'income')
   const expenses = transactions.filter((t) => t.type === 'expense')
   const transfers = transactions.filter(
@@ -54,7 +60,7 @@ export function TypeView({ transactions }: { transactions: Transaction[] }) {
             </p>
           )}
           <div className="rounded-2xl bg-white border border-stone-100 px-4">
-            {txs.map((tx) => <TransactionRow key={tx.id} tx={tx} />)}
+            {txs.map((tx) => <TransactionRow key={tx.id} tx={tx} onCategoryChange={onCategoryChange} />)}
           </div>
         </div>
       ))}
