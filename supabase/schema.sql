@@ -15,7 +15,9 @@ CREATE TABLE IF NOT EXISTS public.users (
   check_in_day              integer CHECK (check_in_day BETWEEN 1 AND 28),
   age_bracket               text,
   gender                    text,
-  analytics_consent         boolean DEFAULT false
+  analytics_consent         boolean DEFAULT false,
+  monthly_budget            numeric(12,2),
+  category_budgets          jsonb DEFAULT '{}'::jsonb
 );
 
 -- Auto-create a public.users row whenever Supabase creates an auth user
@@ -121,3 +123,61 @@ CREATE TABLE IF NOT EXISTS exchange_rates (
   rates_json      jsonb,
   updated_at      timestamptz DEFAULT now()
 );
+
+-- ============================================================
+-- Row Level Security
+-- The app has no service-role key anywhere (see lib/supabase/server.ts and
+-- lib/supabase/client.ts) — every request authenticates as the calling
+-- user's own session via the public anon key. RLS is the ONLY thing
+-- enforcing that a user can only read/write their own rows. Re-run this
+-- section any time this schema is applied to a new project — a project
+-- with RLS enabled by default but no policies denies ALL access, including
+-- a user's own legitimate self-access; a project with RLS off entirely
+-- exposes every user's data to anyone holding the public anon key.
+-- ============================================================
+
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.statements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.monthly_reports ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.check_ins ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.exchange_rates ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "users_select_own" ON public.users;
+CREATE POLICY "users_select_own" ON public.users
+  FOR SELECT USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "users_insert_own" ON public.users;
+CREATE POLICY "users_insert_own" ON public.users
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "users_update_own" ON public.users;
+CREATE POLICY "users_update_own" ON public.users
+  FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "users_delete_own" ON public.users;
+CREATE POLICY "users_delete_own" ON public.users
+  FOR DELETE USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "statements_all_own" ON public.statements;
+CREATE POLICY "statements_all_own" ON public.statements
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "transactions_all_own" ON public.transactions;
+CREATE POLICY "transactions_all_own" ON public.transactions
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "monthly_reports_all_own" ON public.monthly_reports;
+CREATE POLICY "monthly_reports_all_own" ON public.monthly_reports
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "check_ins_all_own" ON public.check_ins;
+CREATE POLICY "check_ins_all_own" ON public.check_ins
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- Shared reference data, not user-scoped — readable by any signed-in
+-- session (including anonymous), not writable by any client role. Nothing
+-- in the app currently writes to this table.
+DROP POLICY IF EXISTS "exchange_rates_read_all" ON public.exchange_rates;
+CREATE POLICY "exchange_rates_read_all" ON public.exchange_rates
+  FOR SELECT USING (auth.role() = 'authenticated');

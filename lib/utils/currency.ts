@@ -1,3 +1,4 @@
+import { parseLocalDate } from '@/lib/utils/dates'
 import type { Transaction } from '@/types'
 
 export function formatTransaction(tx: Transaction): {
@@ -20,7 +21,7 @@ export function formatTransaction(tx: Transaction): {
     rateAttribution = 'Bank rate applied'
   } else if (tx.exchange_rate_source === 'estimated') {
     const dateStr = tx.date
-      ? new Date(tx.date).toLocaleDateString('en-SG', { month: 'short', day: 'numeric', year: 'numeric' })
+      ? parseLocalDate(tx.date).toLocaleDateString('en-SG', { month: 'short', day: 'numeric', year: 'numeric' })
       : ''
     rateAttribution = `Estimated — converted at rate as of ${dateStr}`
   }

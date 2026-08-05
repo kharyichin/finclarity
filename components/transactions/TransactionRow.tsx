@@ -9,6 +9,7 @@ import {
   needsCategoryReview,
 } from '@/lib/utils/categories'
 import { useCardNicknames } from '@/components/providers/CardNicknamesProvider'
+import { parseLocalDate } from '@/lib/utils/dates'
 import type { Transaction } from '@/types'
 
 interface Props {
@@ -42,7 +43,7 @@ export function TransactionRow({ tx, onCategoryChange }: Props) {
         <p className="truncate text-sm font-medium text-stone-800">{tx.merchant}</p>
         <div className="mt-0.5 flex flex-wrap items-center gap-2">
           <span className="text-xs text-stone-400">
-            {new Date(tx.date).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
+            {parseLocalDate(tx.date).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
           </span>
           <span className="text-xs text-stone-300">·</span>
 

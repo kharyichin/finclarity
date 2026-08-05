@@ -27,7 +27,7 @@ function ExportSection({ isSignedIn }: { isSignedIn: boolean }) {
           Opens a printable monthly summary with spending charts. Use your browser&apos;s &ldquo;Save as PDF&rdquo; option.
         </p>
         {isSignedIn ? (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
@@ -44,6 +44,12 @@ function ExportSection({ isSignedIn }: { isSignedIn: boolean }) {
               className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition"
             >
               ↓ Download PDF
+            </a>
+            <a
+              href="/api/export/csv"
+              className="inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition"
+            >
+              ↓ Download all as CSV
             </a>
           </div>
         ) : (

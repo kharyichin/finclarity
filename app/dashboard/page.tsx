@@ -79,6 +79,9 @@ export default function DashboardPage() {
           setReport(parsed.report)
           setHasUploads(true)
           setLoading(false)
+          // Anonymous data only ever holds one month (the uploaded statement's) —
+          // point the selector at it instead of leaving it on the calendar default.
+          if (parsed.report.month_year) setMonth(parsed.report.month_year)
           return
         }
       } catch { /* ignore */ }

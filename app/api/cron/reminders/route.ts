@@ -18,7 +18,10 @@ export async function GET() {
   const results = await Promise.allSettled(
     (users ?? []).map(async (user) => {
       await resend.emails.send({
-        from: 'FinClarity <hello@finclarity.app>',
+        // TODO(D1): finclarity.app is not verified in Resend (no DKIM/SPF records for Resend added
+        // to its DNS zone) — sending from that domain will fail. Using Resend's sandbox sender until
+        // the domain is verified; sandbox can only deliver to the Resend account's own verified email.
+        from: 'FinClarity <onboarding@resend.dev>',
         to: user.email!,
         subject: 'Time to check in on your finances',
         html: `

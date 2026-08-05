@@ -168,7 +168,7 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
     // so the report always reflects the full combined picture
     const { data: allTxRows } = await supabase
       .from('transactions')
-      .select('type, claude_category, sgd_amount, amount')
+      .select('type, claude_category, user_category, sgd_amount, amount')
       .eq('user_id', stmt.user_id)
       .eq('month_year', monthYear)
 
@@ -205,7 +205,9 @@ async function runPipeline(statementId: string, fileBytes: Buffer, password?: st
         ? combinedIncomeTot - combinedSpent  // net savings for bank accounts
         : combinedIncomeTot,
       top_category: combinedTopCategory,
-      transactions: [],
+      // Same filtered set used for combinedSpent above, so the narrative's category
+      // breakdown always sums to the total_spent figure it's given.
+      transactions: combinedExpenses as unknown as TransactionSummary['transactions'],
     }
 
     const report = await generateReport({
@@ -301,7 +303,15 @@ async function runAnonymousPipeline(fileBytes: Buffer, password?: string): Promi
       total_spent: totalSpent,
       total_saved: isAccountStatement ? totalIncome - totalSpent : totalIncome,
       top_category: topCategory,
-      transactions: [],
+      // Mapped from `expenses` (same set used for totalSpent above) so the narrative's
+      // category breakdown always sums to the total_spent figure it's given.
+      transactions: expenses.map((t) => ({
+        type: t.type,
+        claude_category: t.category,
+        user_category: null,
+        sgd_amount: t.bankRateSGD ?? t.amount,
+        amount: t.amount,
+      })) as unknown as TransactionSummary['transactions'],
     }
 
     const report = await generateReport({

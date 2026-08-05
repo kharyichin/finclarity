@@ -6,6 +6,17 @@ export interface Week {
   end: Date
 }
 
+/**
+ * Parses a date-only string (e.g. "2026-06-01") as local midnight.
+ * `new Date("2026-06-01")` parses as UTC midnight instead, which shifts to the
+ * previous calendar day in any negative-UTC-offset timezone — use this instead
+ * for any `date`-typed column value (transactions, statements, etc).
+ */
+export function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('T')[0].split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
 export function isCompleteMonth(dateRange: { start: Date; end: Date }): boolean {
   const diffMs = dateRange.end.getTime() - dateRange.start.getTime()
   const diffDays = diffMs / (1000 * 60 * 60 * 24)

@@ -86,10 +86,12 @@ Fixture notes (redacted patterns only): `docs/fixtures/t1-statement-patterns.md`
 - [x] **P4. T2 prompt extensions** — StanChart, HSBC, Maybank, CIMB
 - [x] **P5. Low-confidence / Other review** — minimal UI to fix bad categories
 - [x] **P6. Narrative prompt pass** — less mechanical, more “what changed”
+  - 2026-08-05: prompt wording itself was fine, but the narrative was fed a hardcoded empty transaction list (`app/api/statements/upload/route.ts`) and so always claimed 100% of spend was in one category — fixed alongside `docs/checklist.md` item 5. Prompt quality now matches the intent of this item.
 - [x] **U3. Dashboard top visual** — simple chart beside narrative
 - [x] **U4. Landing mobile + bank row polish**
 - [x] **P7. FX disclaimer one-liner** (copy already decided in spec)
 - [ ] **D1. Resend domain + reminder email smoke test** (only if using check-ins)
+  - 2026-08-05: `finclarity.app` DNS is not accessible to us (Cloudflare-managed, no DNS login) — cannot add Resend's SPF/DKIM records to verify the domain. Temporarily switched `from` in `app/api/cron/reminders/route.ts` to Resend's sandbox sender (`onboarding@resend.dev`), which only delivers to the Resend account's own verified email — real user reminders will not go out until domain access is sorted and this is re-verified.
 
 ### Week 2 stretch (only if ahead)
 

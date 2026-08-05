@@ -137,7 +137,7 @@ export default function DemoPage() {
               topCategory={DEMO_CARDS.top_category}
             />
 
-            <SpendSaveStrip data={DEMO_CARDS} />
+            <SpendSaveStrip data={DEMO_CARDS} isAnonymous />
 
             <Tooltip
               step={2}

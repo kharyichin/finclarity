@@ -1,6 +1,6 @@
 'use client'
 
-import { getCalendarWeeks } from '@/lib/utils/dates'
+import { getCalendarWeeks, parseLocalDate } from '@/lib/utils/dates'
 import { TransactionRow } from '@/components/transactions/TransactionRow'
 import type { Transaction } from '@/types'
 
@@ -17,7 +17,7 @@ export function TimeView({
 
   const buckets = weeks.map((week) => {
     const txs = transactions.filter((tx) => {
-      const d = new Date(tx.date)
+      const d = parseLocalDate(tx.date)
       return d >= week.start && d <= week.end
     })
     const spent = txs

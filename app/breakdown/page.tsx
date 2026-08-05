@@ -44,13 +44,23 @@ export default function BreakdownPage() {
     supabase.auth.getUser().then(({ data }) => {
       const anon = data.user?.is_anonymous ?? false
       setIsAnonymous(anon)
-      setAuthChecked(true)
-      if (!anon) {
+      if (anon) {
+        // Anonymous data only ever holds one month (the uploaded statement's) —
+        // point the selector at it instead of leaving it on the calendar default.
+        const pending = sessionStorage.getItem('finclarity_pending_upload')
+        if (pending) {
+          try {
+            const parsed = JSON.parse(pending)
+            if (parsed.meta?.monthYear) setMonth(parsed.meta.monthYear)
+          } catch { /* ignore */ }
+        }
+      } else {
         fetch('/api/user')
           .then((r) => (r.ok ? r.json() : null))
           .then((u) => { if (u?.category_budgets) setCategoryBudgets(u.category_budgets) })
           .catch(() => {})
       }
+      setAuthChecked(true)
     })
   }, [])
 
@@ -154,7 +164,16 @@ export default function BreakdownPage() {
 
   const onAnonymousSuccess = useCallback(() => {
     setFlow({ stage: 'success' })
-    loadAnonTransactions(month)
+    const pending = sessionStorage.getItem('finclarity_pending_upload')
+    let newMonth = month
+    if (pending) {
+      try {
+        const parsed = JSON.parse(pending)
+        if (parsed.meta?.monthYear) newMonth = parsed.meta.monthYear
+      } catch { /* ignore */ }
+    }
+    setMonth(newMonth)
+    loadAnonTransactions(newMonth)
   }, [month, loadAnonTransactions])
 
   const onNeedsPasswordAnonymous = useCallback((file: File) => {

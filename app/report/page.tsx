@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { parseLocalDate } from '@/lib/utils/dates'
 import type { Transaction, MonthlyReport, SummaryCards, Observation } from '@/types'
 
 const CATEGORY_COLOURS: Record<string, string> = {
@@ -227,7 +228,7 @@ function ReportContent() {
                   <div key={tx.id} className="flex justify-between py-1.5 border-b border-stone-50 text-sm">
                     <div className="flex gap-3 min-w-0">
                       <span className="text-stone-400 shrink-0 text-xs pt-0.5">
-                        {new Date(tx.date).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
+                        {parseLocalDate(tx.date).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
                       </span>
                       <span className="text-stone-700 truncate">{tx.merchant}</span>
                     </div>
