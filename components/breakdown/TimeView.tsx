@@ -1,7 +1,7 @@
 'use client'
 
 import { getCalendarWeeks, parseLocalDate } from '@/lib/utils/dates'
-import { TransactionRow } from '@/components/transactions/TransactionRow'
+import { MerchantGroupedTransactions } from '@/components/transactions/MerchantGroupedTransactions'
 import type { Transaction } from '@/types'
 
 export function TimeView({
@@ -79,7 +79,7 @@ export function TimeView({
             <span className="text-sm text-stone-500">{spent.toFixed(2)} SGD spent</span>
           </div>
           <div className="rounded-2xl bg-white border border-stone-100 px-4">
-            {txs.map((tx) => <TransactionRow key={tx.id} tx={tx} onCategoryChange={onCategoryChange} />)}
+            <MerchantGroupedTransactions txs={txs} onCategoryChange={onCategoryChange} />
           </div>
         </div>
       ))}

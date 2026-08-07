@@ -62,21 +62,19 @@ function ExportSection({ isSignedIn }: { isSignedIn: boolean }) {
   )
 }
 
-function applyTheme(theme: 'light' | 'dark') {
-  if (theme === 'dark') {
-    document.documentElement.classList.add('dark')
-    localStorage.setItem('theme', 'dark')
-  } else {
-    document.documentElement.classList.remove('dark')
-    localStorage.setItem('theme', 'light')
+function applyTheme(theme: 'light' | 'dark' | 'paper') {
+  document.documentElement.classList.remove('dark', 'paper')
+  if (theme === 'dark' || theme === 'paper') {
+    document.documentElement.classList.add(theme)
   }
+  localStorage.setItem('theme', theme)
 }
 
 interface UserProfile {
   email: string | null
   auth_email: string | null
   check_in_day: number | null
-  theme: 'light' | 'dark'
+  theme: 'light' | 'dark' | 'paper'
   age_bracket: string | null
   gender: string | null
   analytics_consent: boolean
@@ -250,7 +248,7 @@ export default function SettingsPage() {
               <div className="px-5 py-4">
                 <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">Appearance</p>
                 <div className="flex gap-3">
-                  {(['light', 'dark'] as const).map((t) => (
+                  {(['light', 'dark', 'paper'] as const).map((t) => (
                     <button
                       key={t}
                       onClick={() => save({ theme: t })}
@@ -260,7 +258,7 @@ export default function SettingsPage() {
                           : 'border-stone-200 text-stone-600 hover:bg-stone-50'
                       }`}
                     >
-                      {t === 'light' ? '☀️ Light' : '🌙 Dark'}
+                      {t === 'light' ? '☀️ Light' : t === 'dark' ? '🌙 Dark' : '📖 Paper'}
                     </button>
                   ))}
                 </div>

@@ -45,7 +45,7 @@ export function SummaryCards({ data, hasComparison, creditCardOnly }: SummaryCar
     <div className="grid grid-cols-2 gap-3">
 
       {/* Total Spent — terracotta, dark text */}
-      <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: '#D4845A' }}>
+      <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: 'var(--dash-spent)' }}>
         <div className="flex items-center gap-2">
           <span className="text-base">💸</span>
           <p className="text-xs font-medium text-white">Total spent</p>
@@ -55,7 +55,7 @@ export function SummaryCards({ data, hasComparison, creditCardOnly }: SummaryCar
 
       {/* Total Saved — deep teal, white text */}
       {creditCardOnly ? (
-        <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: '#4A8078' }}>
+        <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: 'var(--dash-saved)' }}>
           <div className="flex items-center gap-2">
             <SparkleIcon />
             <p className="text-xs font-medium text-white/80">Total saved</p>
@@ -63,7 +63,7 @@ export function SummaryCards({ data, hasComparison, creditCardOnly }: SummaryCar
           <p className="text-sm text-white/70 leading-snug">Add your bank statement to see savings</p>
         </div>
       ) : (
-        <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: '#4A8078' }}>
+        <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: 'var(--dash-saved)' }}>
           <div className="flex items-center gap-2">
             <SparkleIcon />
             <p className="text-xs font-medium text-white/80">Total saved</p>
@@ -76,7 +76,7 @@ export function SummaryCards({ data, hasComparison, creditCardOnly }: SummaryCar
       )}
 
       {/* Biggest Category — deep summer sky, white text */}
-      <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: '#4A8098' }}>
+      <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: 'var(--dash-category)' }}>
         <div className="flex items-center gap-2">
           <span className="text-base">🏷️</span>
           <p className="text-xs font-medium text-white/80">Biggest category</p>
@@ -88,7 +88,7 @@ export function SummaryCards({ data, hasComparison, creditCardOnly }: SummaryCar
       </div>
 
       {/* Watch Out — warm cream, dark text */}
-      <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: '#F0D0A0' }}>
+      <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ backgroundColor: 'var(--dash-watchout)' }}>
         <div className="flex items-center gap-2">
           <span className="text-base">👀</span>
           <p className="text-xs font-medium text-stone-700">Watch out</p>

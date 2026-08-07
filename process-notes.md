@@ -322,4 +322,92 @@
 ### Step 15: Animated spend vs save stat strip
 - Built `components/dashboard/SpendSaveStrip.tsx` — full-width animated bar, amber for spent, green for saved, on a stone-100 track. Savings rate % shown below. Handles credit-card-only case (no savings: full amber bar, "— saved" label). Animation triggered by `useEffect` + `requestAnimationFrame` so it fires reliably on mount.
 - Wired between `NarrativeSummary` and `SummaryCards` in both `app/dashboard/page.tsx` and `app/demo/page.tsx`.
+
+## Session: 2026-08-05 — Bug audit, RLS fix, production deploy
+
+**Trigger:** PDF parsing appeared broken. Root cause was not PDF code at all — the original Supabase project (`djoulapjhrkzmixqtjfj`) had been deleted (DNS no longer resolves), so anonymous auth was failing on every request. Migrated to a new Supabase project (ref `aqdpkgwfyunnokybhtcn`), updated `.env.local`. Confirmed the 6 tables + `monthly_budget`/`category_budgets` columns already existed live on the new project.
+
+**Checklist cleanup:** Reconciled `docs/checklist.md` and `docs/checklist-post-mvp.md` against actual app behaviour — item 19 (landing page) was done but implemented differently than spec'd (wired into root `/` instead of a separate `/welcome` route); item 7's root-redirect acceptance criteria is now stale as a result.
+
+**Full audit (background agent) of every `[x]` checklist item found 7 real bugs:**
+1. Narrative always attributed 100% of spend to one category — `transactions: []` was hardcoded in `app/api/statements/upload/route.ts` at both call sites feeding the report generator. **Fixed and verified live.**
+2. Anonymous dashboard/breakdown showed a false empty state right after upload — displayed month defaulted to calendar last-month instead of the upload's actual month. **Fixed and verified live.**
+3. `new Date(tx.date)` parses date-only strings as UTC, silently dropping transactions at week boundaries in the Time tab and showing dates one day early in negative-UTC-offset zones. Added `parseLocalDate()` to `lib/utils/dates.ts`, applied everywhere. **Fixed and verified live.**
+4. Account creation (`supabase.auth.updateUser`) fails — confirmed via network inspection the client sends the correct email; Supabase's own auth server rejects it, then rate-limits. Root cause: **no custom SMTP configured** on the new Supabase project (using its low-cap default shared email service). Not a code bug — needs Supabase dashboard → Auth → SMTP Settings configured with a real provider (Resend account already exists for this). **Still unresolved as of this session.**
+5. CSV export route existed but had no UI link anywhere — restored as "Download all as CSV" in Settings. **Fixed.**
+6. Demo page leaked a "Set a budget →" link (via `SpendSaveStrip`, a separate code path from `BudgetBar`) into a real, disconnected budget page. **Fixed.**
+7. `supabase/schema.sql` didn't match live schema (`monthly_budget`, `category_budgets` were added by hand, never committed). **Fixed** — schema.sql now matches live.
+
+**Critical security finding (before deploying):** the new Supabase project had RLS **enabled with zero policies** on every table — not a data leak (cross-user access was correctly blocked), but a full functional block: even a user's own self-access (read/insert/update their own `users` row) was denied by default. This would have broken the `users` upsert fallback in `/api/statements/upload` and `/api/user`, and the entire delete-account flow, for any real (non-anonymous) user. Wrote the missing self-access-only RLS policies (`auth.uid() = user_id` pattern) into `supabase/schema.sql`, had the user run them via the Supabase SQL editor, then verified with a two-independent-anonymous-session cross-access test via curl: self-access works, cross-user read/update/delete all correctly blocked (0 rows affected), impersonation attempts hard-blocked with 403.
+
+**Deploy:** Vercel CLI was outdated (52.0.0) and had a bug preventing non-interactive `env add` — upgraded to 58.5.1, which fixed it. Discovered that removing an env var for one environment (`preview`) removed it from all three (Prod/Preview/Dev shared one record) — re-added Supabase env vars to all three explicitly. Deployed preview first, verified full pipeline end-to-end (upload → parse → extract → narrative) against the live URL, then promoted to production: **https://my-hackathon-project-mu.vercel.app**. No custom domain attached to the account.
+
+**Still open:**
+- ~~D1 / bug #4 root cause — Supabase custom SMTP not configured.~~ **Resolved 2026-08-06** — see session below.
+- Item 9 sub-items (streak counter, theme persistence, delete-account) — SMTP blocker cleared 2026-08-06, but still not independently re-verified.
+- Item 16 (insight tiles) not independently re-verified — needs a two-different-card test fixture.
+- P1 — extraction quality only tested against a synthetic statement this session; still needs a spot-check against a real OCBC/DBS/UOB statement.
 - TypeScript: no errors.
+
+**Correction (2026-08-05, later session):** the "Devpost submission not started" note above was wrong — checklist item 11 was already complete (see earlier in this file) and Jade confirmed she submitted it a while ago. Only open question: whether the listing's live URL/description need a refresh to reflect this session's fixes and the Sentry addition below — not yet decided.
+
+## Session: 2026-08-05 (cont'd) — Sentry error monitoring
+
+**Trigger:** Continuing the open item from the bug-audit session above — no error monitoring configured on the Vercel project.
+
+**Billing question raised:** user asked whether Sentry's install would need a payment method despite being "free" — correct instinct. Confirmed via Vercel's billing-plans API schema: individual marketplace plans carry a `paymentMethodRequired` flag independent of cost, so a $0 plan can still require a card on file (fraud/verification, not usage billing). Sentry's plans: `am3_f` Developer ($0.00/mo — chosen), `am3_team` ($29/mo), `am3_business` ($89/mo). User also asked whether being "hammered" could trigger a surprise bill — confirmed the free Developer tier has no overage billing; it drops/rate-limits events past the ~5k/mo quota instead of charging. Noted `vercel integration resource create-threshold` as an available hard spend-cap mechanism if ever needed.
+
+**Install friction (two rounds):**
+1. `vercel integration add sentry --no-claim --plan am3_f` required accepting Sentry's marketplace terms in browser first — the CLI-generated `accept-terms` link 404'd with "Missing billingPlanId for installation-only plan integration" (looks like a Vercel dashboard bug on that deep link). Worked around by having the user install directly from `vercel.com/marketplace/sentry` and picking the Developer plan there. `vercel integration accept-terms sentry` also confirmed to categorically require an interactive human terminal — cannot be scripted.
+2. After terms acceptance, `vercel integration add` succeeded once given the required Sentry metadata flags (`-m name=finclarity -m region=us -m platform=javascript-nextjs`). Resource `sentry-teal-brush` provisioned and connected to the project; `vercel env pull` added `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`, etc. to `.env.local` (already gitignored).
+
+**SDK wiring — done manually, not via wizard:** `npx @sentry/wizard@latest` needs a real browser OAuth login and has no way to complete unattended — it timed out waiting for login when run as a background task, and a `--non-interactive` retry crashed on `ERR_TTY_INIT_FAILED` (no TTY available in the tool sandbox). Checked `node_modules/next/dist/docs` per AGENTS.md instructions and confirmed Next.js 16's current App Router convention (`instrumentation.ts` + `instrumentation-client.ts`, not the older `sentry.client.config.ts` pattern) before hand-writing the files: `instrumentation.ts`, `instrumentation-client.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, `app/global-error.tsx`, and `next.config.ts` wrapped with `withSentryConfig`. Installed `@sentry/nextjs@10.69.0`.
+
+**Verification:** `npx tsc --noEmit` clean. Dev server restarted clean, no Sentry init errors. Added a throwaway `app/api/sentry-test/route.ts` that threw an error, hit it once, confirmed a clean 500 + correct stack trace locally, then deleted the route. Couldn't confirm ingestion via the Sentry API directly — the Vercel-provisioned `SENTRY_AUTH_TOKEN` is scoped for CI source-map uploads only, not issue reads (403 on `/api/0/projects/.../issues/`). User checked the Sentry dashboard directly (via Vercel SSO — `vercel integration open sentry`, no separate Sentry login exists) and confirmed the test error landed correctly, unhandled, tagged with the right route.
+
+**Committed and pushed:** `97b195b` — Sentry config files, `next.config.ts`, `package.json`/`package-lock.json`, and a `.gitignore` hardening (`.env*`) that `vercel env pull` added automatically. Deliberately left the unrelated pre-existing `.claude/settings.local.json` and this file's earlier uncommitted edits out of that commit. Scanned all new files for hardcoded secrets before staging — clean, everything reads from `process.env`.
+
+**Still open:** whether to refresh the Devpost listing for the fixes/Sentry addition (see correction note above) — undecided.
+
+## Session: 2026-08-06 — Supabase custom SMTP (resolves D1 / bug #4)
+
+**Scope check:** Jade clarified the hackathon submission is done and this is now an ongoing personal project — shifts the bar from "good enough for a demo" to "actually correct for real users" on decisions like email verification going forward.
+
+**Domain decision:** confirmed via `check_domain_availability_and_price` that `finclarity.app`, `.com`, and `.io` are all already registered by someone else — not just "no DNS access," genuinely not ownable as-is. `finclarityapp.com` and `tryfinclarity.com` are both available ($11.25/yr via Vercel). Presented the buy-a-real-domain option given the project's new ongoing status; Jade chose to defer and fix SMTP now with Resend's unverified sandbox sender instead. Revisit domain purchase when ready — it's the actual fix for emailing arbitrary real users, not just the account owner.
+
+**Resend recipient restriction:** confirmed (via docs + community reports, not fully documented behavior) that without a verified sending domain, Resend only delivers to the email address registered on the Resend account itself — not arbitrary recipients. Jade changed her Resend account email to `appfinclarity@gmail.com`; verified via a direct `POST /emails` API call (using the account's own `RESEND_API_KEY`) that delivery to that address now works — Jade confirmed receipt.
+
+**SMTP configured:** Jade set up Supabase custom SMTP herself in the dashboard (Authentication → SMTP Settings) — no CLI/Management API token was available to do this programmatically. Settings: host `smtp.resend.com`, port `465`, user `resend`, password = Resend API key, sender `onboarding@resend.dev`.
+
+**Verification — done via direct API call, not the UI:** rather than running the full PDF-upload pipeline just to reach the "Save your progress" screen (costly and slow for what's really an SMTP test), replicated the exact failing code path directly: `POST {supabase_url}/auth/v1/signup` with an empty body to create an anonymous session (mirrors `signInAnonymously()`), then `PUT {supabase_url}/auth/v1/user` with `{email, password}` using that session's access token (mirrors `updateUser()`, the call item 13/D1 was blocked on). Response showed no `429`/invalid-email rejection and a populated `email_change_sent_at`. Jade confirmed the confirmation email was received at `appfinclarity@gmail.com`, sent 2026-08-06 18:36:49 UTC. This confirms the underlying bug is fixed; a full UI click-through of the actual "Save your progress" form is still worth doing as a follow-up, along with the item 9 sub-items it was blocking.
+
+**Note:** a browser-automation approach to this verification was attempted first and the tool call was rejected by the user — pivoted to the curl/REST approach instead, which turned out to be a more direct test of the actual bug anyway (no PDF/Claude cost, no browser dependency).
+
+**Updated:** `docs/checklist.md` items 9 and 13 with resolution notes. `.env.local` `RESEND_API_KEY` unchanged; no secrets were pasted into chat (partial key prefix confirmed by matching against `.env.local` server-side rather than echoing the full value).
+
+**Still open:** item 9 sub-items (streak counter, theme persistence, delete-account) and item 13's full UI flow not yet re-verified end-to-end (only the underlying API call was tested); item 16 (insight tiles) still needs a two-card fixture; P1 extraction spot-check against a real bank statement; Devpost listing refresh (undecided); domain purchase deferred — real end-user email delivery still blocked until a domain is verified.
+
+## Session: 2026-08-06 (cont'd) — Scope reshuffle: Paper theme, merchant grouping, and a live-integration research thread
+
+**Trigger:** Jade brought a bundle of new requests: (1) a Kindle-style black-and-white theme + merchant consolidation on transaction lists — concrete, buildable; (2) a much bigger set of exploratory questions about automating transaction capture (Apple Wallet, Android, Plaid-style aggregators, expanding into a "super app" beyond bank/credit-card statements).
+
+**Scope-reversal flag raised:** the original `/scope` session deliberately pivoted away from live bank/card integrations specifically to avoid legal/API complexity, choosing statement-upload to validate the insight engine first (see `/scope` notes above). Points 2–5 of this request reopen exactly that complexity. Flagged this to Jade rather than silently building toward it — recommended a dedicated `/scope` or `/prd` pass on "live transaction capture + reconciliation" before any implementation, since it touches compliance, security surface, and ongoing data-sync infra. Not started; only the concrete item (theme + merchant grouping) was built this session.
+
+**Apple Wallet automation — corrected a false premise before it shaped a design:** there is no public Apple API for third-party apps to read Apple Pay/Wallet transaction data. What's actually possible is a manually-triggered Shortcut (tap to log a note after a purchase) — not automation, just a fast manual-capture UX, which collapses into Jade's own point 4 ("manual tagging layer"). Retailer Wallet passes are only readable if explicitly shared per-file; no bulk read API exists either.
+
+**Android/Samsung parity:** more technically feasible than iOS — `NotificationListenerService` legitimately allows reading other apps' notification content with user permission (how Tasker/MacroDroid-style bank-SMS automations work today). Still fragile (breaks on notification format changes) but a real path, unlike iOS.
+
+**Mobile app necessity:** concluded not necessary — neither platform gives real automated capture, so a native app's main value would be push notifications, camera receipt capture, and biometric login. A Shortcut/Tasker automation just needs an API endpoint to POST to, which a web app can already provide.
+
+**Plaid-alternatives research (background agent, Singapore bank coverage):** Finverse (Singapore-based, explicit DBS/OCBC coverage, self-serve-sounding pricing) is the most realistic option for a solo project. Salt Edge is a plausible second (21 SG institutions listed, public dev sandbox). SGFinDex is the most complete (DBS/OCBC/UOB/SC/HSBC/Citibank/Maybank + CPF/IRAS/HDB via one SingPass consent) but almost certainly requires a formal institutional partnership, not self-serve signup. None confirmed a genuinely free indefinite tier from search alone — would need direct signup to verify. Purely research — nothing provisioned or built.
+
+**Built this session — Paper theme + merchant consolidation:** see `docs/checklist.md` items 22–23 for full implementation detail. Notable moments:
+- User initially asked for the theme as either "full app-wide" or "dashboard+breakdown only" (the two options I offered); the actual answer — "add as an additional theme" — meant a third Settings toggle alongside Light/Dark, not a page-scoped restyle. Good reminder to read reformulated answers carefully rather than mapping them onto the offered options.
+- For merchant grouping, Jade asked me to just pick — went with grouped-by-default-with-per-merchant-expand over a page-wide list/grouped mode toggle, reasoning: matches the existing `CategoryView` pattern, one mental model instead of a mode switch, less state.
+- Found two components (`SummaryCards.tsx`, `NarrativeSummary.tsx`) using hardcoded inline hex colours instead of Tailwind classes — the app's existing dark-theme technique (override specific Tailwind utility classes via a `.dark` ancestor class) can't reach inline styles at all. Refactored those two files to reference new CSS custom properties instead, which is now the pattern to follow if a third theme-dependent color is ever needed on an inline-styled element.
+- Hit a stale Turbopack CSS cache during verification (new `.paper` rules weren't in the served bundle at all) — required `.next` wipe + restart, not a code bug.
+- Found and fixed a **pre-existing** hydration warning on `<html className>` in `app/layout.tsx` (missing `suppressHydrationWarning`) — was already latent for the Dark theme, just hadn't been noticed until actively testing theme switching.
+- A browser-automation call was rejected mid-session during earlier SMTP testing; for this UI work switched back to browser tools since curl can't verify visual/design changes — worked fine this time. Confirms the earlier rejection was context-specific (that particular testing approach), not a standing "no browser" preference.
+- Verified merchant grouping without spending Claude API credits or needing a real PDF: seeded `sessionStorage`'s anonymous-upload payload directly with fixture JSON matching the shape `app/breakdown/page.tsx` expects, then loaded the page normally. Reusable technique for testing anonymous-flow UI going forward.
+
+**Still open:** the live-integration research (Apple Wallet reconciliation, Plaid-alternative selection, Android parity, "super app" scope) awaits a dedicated `/scope` session — not scheduled yet.

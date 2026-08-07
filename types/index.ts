@@ -3,7 +3,7 @@ export interface User {
   email: string | null
   created_at: string
   has_completed_onboarding: boolean
-  theme: 'light' | 'dark'
+  theme: 'light' | 'dark' | 'paper'
   check_in_day: number | null
   age_bracket: '18-24' | '25-34' | '35-44' | '45-54' | '55+' | null
   gender: 'female' | 'male' | 'non-binary' | 'prefer_not_to_say' | null

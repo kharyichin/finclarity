@@ -1,6 +1,6 @@
 'use client'
 
-import { TransactionRow } from '@/components/transactions/TransactionRow'
+import { MerchantGroupedTransactions } from '@/components/transactions/MerchantGroupedTransactions'
 import type { Transaction } from '@/types'
 
 const typeLabels: Record<string, string> = {
@@ -60,7 +60,7 @@ export function TypeView({
             </p>
           )}
           <div className="rounded-2xl bg-white border border-stone-100 px-4">
-            {txs.map((tx) => <TransactionRow key={tx.id} tx={tx} onCategoryChange={onCategoryChange} />)}
+            <MerchantGroupedTransactions txs={txs} onCategoryChange={onCategoryChange} />
           </div>
         </div>
       ))}

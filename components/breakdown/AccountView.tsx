@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { TransactionRow } from '@/components/transactions/TransactionRow'
+import { MerchantGroupedTransactions } from '@/components/transactions/MerchantGroupedTransactions'
 import { useCardNicknames } from '@/components/providers/CardNicknamesProvider'
 import type { Transaction } from '@/types'
 
@@ -154,9 +154,7 @@ export function AccountView({
               </div>
             </div>
             <div className={`rounded-2xl border px-4 ${ACCOUNT_LIGHT[i % ACCOUNT_LIGHT.length]}`}>
-              {all.map((tx) => (
-                <TransactionRow key={tx.id} tx={tx} onCategoryChange={onCategoryChange} />
-              ))}
+              <MerchantGroupedTransactions txs={all} onCategoryChange={onCategoryChange} />
             </div>
           </div>
         )

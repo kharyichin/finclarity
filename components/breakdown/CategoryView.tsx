@@ -1,6 +1,6 @@
 'use client'
 
-import { TransactionRow } from '@/components/transactions/TransactionRow'
+import { MerchantGroupedTransactions } from '@/components/transactions/MerchantGroupedTransactions'
 import { getCategoryIcon } from '@/lib/utils/categories'
 import type { Transaction } from '@/types'
 
@@ -144,9 +144,7 @@ export function CategoryView({
               <span className="text-sm font-medium text-stone-600">{total.toFixed(2)} SGD</span>
             </div>
             <div className={`rounded-2xl border px-4 ${CATEGORY_LIGHT[i % CATEGORY_LIGHT.length]}`}>
-              {txs.map((tx) => (
-                <TransactionRow key={tx.id} tx={tx} onCategoryChange={onCategoryChange} />
-              ))}
+              <MerchantGroupedTransactions txs={txs} onCategoryChange={onCategoryChange} />
             </div>
           </div>
         )

@@ -68,13 +68,14 @@ function ReportContent() {
 
   useEffect(() => { load() }, [load])
 
-  // Force light mode on this page — dark class may be on <html>
+  // Force light mode on this page — dark/paper class may be on <html>
   useEffect(() => {
-    document.documentElement.classList.remove('dark')
+    document.documentElement.classList.remove('dark', 'paper')
     return () => {
       // Restore from localStorage on unmount
-      if (localStorage.getItem('theme') === 'dark') {
-        document.documentElement.classList.add('dark')
+      const saved = localStorage.getItem('theme')
+      if (saved === 'dark' || saved === 'paper') {
+        document.documentElement.classList.add(saved)
       }
     }
   }, [])

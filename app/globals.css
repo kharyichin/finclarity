@@ -3,6 +3,21 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Dashboard hero-card colours (referenced via inline style, not Tailwind classes) */
+  --dash-spent: #D4845A;
+  --dash-saved: #4A8078;
+  --dash-category: #4A8098;
+  --dash-watchout: #F0D0A0;
+  --dash-narrative: #3D6E84;
+}
+
+.paper {
+  --dash-spent: #333333;
+  --dash-saved: #2b2b2b;
+  --dash-category: #222222;
+  --dash-watchout: #e9e2cd;
+  --dash-narrative: #3a3a3a;
 }
 
 @theme inline {
@@ -82,6 +97,121 @@
 .dark .bg-pink-50    { background-color: transparent !important; border-color: #f9a8d4 !important; }
 .dark .bg-lime-50    { background-color: transparent !important; border-color: #bef264 !important; }
 .dark .bg-green-50   { background-color: transparent !important; border-color: #86efac !important; }
+
+/* Paper (Kindle-style) theme — monochrome, flat, serif */
+.paper {
+  color-scheme: light;
+  font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+}
+
+.paper body { background-color: #f4f0e6; }
+
+.paper .bg-stone-50  { background-color: #f4f0e6 !important; }
+.paper .bg-stone-100 { background-color: #e9e2cd !important; }
+.paper .bg-white     { background-color: #faf7ef !important; }
+
+.paper .border-stone-100,
+.paper .border-stone-200,
+.paper .border-rose-100,
+.paper .border-green-100 { border-color: #d8d0ba !important; }
+
+.paper .text-stone-800,
+.paper .text-stone-700 { color: #1b1812 !important; }
+.paper .text-stone-600,
+.paper .text-stone-500,
+.paper .text-stone-400 { color: #6b6456 !important; }
+.paper .text-stone-300 { color: #b6ae99 !important; }
+.paper .text-green-700,
+.paper .text-green-600,
+.paper .text-rose-600,
+.paper .text-rose-400,
+.paper .text-amber-600,
+.paper .text-amber-900 { color: #1b1812 !important; }
+
+/* Category pill chips in TransactionRow */
+.paper .bg-stone-100 { background-color: #e9e2cd !important; }
+.paper .text-stone-500 { color: #6b6456 !important; }
+
+/* NarrativeSummary gradient card */
+.paper .from-green-50  { --tw-gradient-from: #f4f0e6 !important; }
+.paper .to-stone-50     { --tw-gradient-to: #f4f0e6 !important; }
+
+.paper input,
+.paper select,
+.paper textarea {
+  background-color: #faf7ef !important;
+  color: #1b1812 !important;
+  border-color: #1b1812 !important;
+  font-family: inherit;
+}
+.paper input::placeholder,
+.paper textarea::placeholder { color: #8c8471 !important; }
+
+.paper .divide-stone-100 > * + * { border-color: #d8d0ba !important; }
+
+.paper .hover\:bg-stone-50:hover,
+.paper .hover\:bg-stone-100:hover  { background-color: #e9e2cd !important; }
+.paper .hover\:text-stone-800:hover,
+.paper .hover\:text-stone-600:hover { color: #1b1812 !important; }
+
+/* Tinted -50 chips → transparent fill with ink-black outline (Kindle badge look) */
+.paper .bg-yellow-50,
+.paper .bg-amber-100,
+.paper .bg-emerald-50,
+.paper .bg-sky-50,
+.paper .bg-violet-50,
+.paper .bg-amber-50,
+.paper .bg-rose-50,
+.paper .bg-teal-50,
+.paper .bg-orange-50,
+.paper .bg-indigo-50,
+.paper .bg-pink-50,
+.paper .bg-lime-50,
+.paper .bg-green-50 { background-color: transparent !important; border-color: #1b1812 !important; }
+
+.paper .border-amber-300,
+.paper .border-amber-400 { border-color: #1b1812 !important; }
+.paper .bg-amber-900,
+.paper .bg-amber-500 { background-color: #1b1812 !important; }
+
+/* Category chart segments (CategoryView colour-cycle) — grayscale ramp */
+.paper .bg-emerald-400 { background-color: #ded7c4 !important; }
+.paper .bg-sky-400     { background-color: #c9c0a8 !important; }
+.paper .bg-violet-400  { background-color: #b4a98c !important; }
+.paper .bg-amber-400   { background-color: #6b6b6b !important; }
+.paper .bg-rose-400    { background-color: #9f9478 !important; }
+.paper .bg-teal-400    { background-color: #8a7f65 !important; }
+.paper .bg-orange-400  { background-color: #756a52 !important; }
+.paper .bg-indigo-400  { background-color: #605740 !important; }
+.paper .bg-pink-400    { background-color: #4b442f !important; }
+.paper .bg-lime-400    { background-color: #36301f !important; }
+
+/* Primary CTA buttons */
+.paper .bg-green-600 { background-color: #1b1812 !important; }
+.paper .hover\:bg-green-700:hover { background-color: #3a3428 !important; }
+
+/* Budget bar / spend-save strip severity colours */
+.paper .bg-green-500,
+.paper .bg-green-300 { background-color: #a39a86 !important; }
+.paper .bg-red-500   { background-color: #1b1812 !important; }
+.paper .text-red-500 { color: #1b1812 !important; }
+
+/* Spinners / drag states */
+.paper .border-green-300 { border-color: #a39a86 !important; }
+.paper .border-t-green-600 { border-top-color: #1b1812 !important; }
+.paper .border-green-400 { border-color: #6b6456 !important; }
+
+/* MonthMixVisual accent dot/bar (Tailwind arbitrary-value classes) */
+.paper .bg-\[\#D4845A\] { background-color: #4a4a4a !important; }
+.paper .bg-\[\#4A8078\] { background-color: #8a8a8a !important; }
+
+.paper .shadow-sm,
+.paper .shadow-lg,
+.paper .shadow-xl { box-shadow: none !important; }
+
+.paper .rounded-2xl,
+.paper .rounded-xl,
+.paper .rounded-lg { border-radius: 3px !important; }
 
 body {
   background: var(--background);
